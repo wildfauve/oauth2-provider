@@ -9,7 +9,7 @@ module Songkick
                     :error, :error_description
 
         REQUIRED_PARAMS = [RESPONSE_TYPE, CLIENT_ID, REDIRECT_URI]
-        VALID_PARAMS    = REQUIRED_PARAMS + [SCOPE, STATE]
+        VALID_PARAMS    = REQUIRED_PARAMS + [SCOPE, STATE, LOGIN_HINT]
         VALID_RESPONSES = [CODE, TOKEN, CODE_AND_TOKEN]
 
         def initialize(resource_owner, params, transport_error = nil)

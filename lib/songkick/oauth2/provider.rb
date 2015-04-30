@@ -60,6 +60,7 @@ module Songkick
     RESPONSE_TYPE          = 'response_type'
     SCOPE                  = 'scope'
     STATE                  = 'state'
+    LOGIN_HINT             = 'login_hint'
     TOKEN                  = 'token'
     USERNAME               = 'username'
 
