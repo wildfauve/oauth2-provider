@@ -35,7 +35,11 @@ module Songkick
         end
 
         def valid_client_secret?(secret)
-          BCrypt::Password.new(client_secret_hash) == secret
+          native_app? ? true : BCrypt::Password.new(client_secret_hash) == secret
+        end
+
+        def native_app?
+          oauth2_client_owner_type == "native_app"
         end
 
       private
@@ -56,4 +60,3 @@ module Songkick
     end
   end
 end
-

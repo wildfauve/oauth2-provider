@@ -6,6 +6,9 @@ module Songkick
         attr_reader :client, :error, :error_description
 
         REQUIRED_PARAMS    = [CLIENT_ID, CLIENT_SECRET, GRANT_TYPE]
+
+        NATIVE_APP_REQUIRED_PARAMS = [GRANT_TYPE]
+
         VALID_GRANT_TYPES  = [AUTHORIZATION_CODE, PASSWORD, ASSERTION, REFRESH_TOKEN, CLIENT_CREDENTIALS]
 
         REQUIRED_PASSWORD_PARAMS  = [USERNAME, PASSWORD]
@@ -75,6 +78,18 @@ module Songkick
 
       private
 
+        def relying_party
+          # native apps may not provide a client_id, so we need to
+          # use the authorization_code to index into the client
+          @client ||= if @params[CLIENT_ID]
+            Model::Client.find_by_client_id(@params[CLIENT_ID])
+          else
+            Model::Authorization.find_by_code(@params[CODE]).try(:client)
+          end
+
+        end
+
+
         def jsonize(*ivars)
           hash = {}
           ivars.each { |key| hash[key] = instance_variable_get("@#{key}") }
@@ -104,7 +119,9 @@ module Songkick
         end
 
         def validate_required_params
-          REQUIRED_PARAMS.each do |param|
+          # Native apps may not provide client_id/secret, so, dont check for them
+          checked_params = relying_party.native_app? ? NATIVE_APP_REQUIRED_PARAMS : REQUIRED_PARAMS
+          checked_params.each do |param|
             next if @params.has_key?(param)
             @error = INVALID_REQUEST
             @error_description = "Missing required parameter #{param}"
@@ -112,13 +129,13 @@ module Songkick
         end
 
         def validate_client
-          @client = Model::Client.find_by_client_id(@params[CLIENT_ID])
-          unless @client
+          # @client = Model::Client.find_by_client_id(@params[CLIENT_ID])
+          unless relying_party
             @error = INVALID_CLIENT
             @error_description = "Unknown client ID #{@params[CLIENT_ID]}"
           end
 
-          if @client and not @client.valid_client_secret?(@params[CLIENT_SECRET])
+          if relying_party and not relying_party.valid_client_secret?(@params[CLIENT_SECRET])
             @error = INVALID_CLIENT
             @error_description = 'Parameter client_secret does not match'
           end
@@ -233,4 +250,3 @@ module Songkick
     end
   end
 end
-
