@@ -103,9 +103,14 @@ module Songkick
             return
           end
 
+          determine_relying_party_intent
+
+          return if @error
+
           validate_required_params
 
           return if @error
+
           validate_client
 
           unless VALID_GRANT_TYPES.include?(@grant_type)
@@ -116,6 +121,19 @@ module Songkick
 
           __send__("validate_#{@grant_type}")
           validate_scope
+        end
+
+        def determine_relying_party_intent
+          if access_by_code
+            unless relying_party
+              @error = INVALID_CLIENT
+              @error_description = "Client can not be found for code #{@params[CODE]}"
+            end
+          end
+        end
+
+        def access_by_code
+          !@params[CLIENT_ID] && @params[CODE]
         end
 
         def validate_required_params
@@ -129,7 +147,6 @@ module Songkick
         end
 
         def validate_client
-          # @client = Model::Client.find_by_client_id(@params[CLIENT_ID])
           unless relying_party
             @error = INVALID_CLIENT
             @error_description = "Unknown client ID #{@params[CLIENT_ID]}"
@@ -142,8 +159,8 @@ module Songkick
         end
 
         def validate_client_credentials
-          owner = @client.owner
-          @authorization = Provider.handle_client_credential(@client, owner, scopes)
+          owner = relying_party.owner
+          @authorization = Provider.handle_client_credential(relying_party, owner, scopes)
           return validate_authorization if @authorization
 
           @error = INVALID_GRANT
@@ -163,7 +180,7 @@ module Songkick
             @error_description = "Missing required parameter code"
           end
 
-          if @client.redirect_uri and @client.redirect_uri != @params[REDIRECT_URI]
+          if relying_party.redirect_uri and relying_party.redirect_uri != @params[REDIRECT_URI]
             @error = REDIRECT_MISMATCH
             @error_description = "Parameter redirect_uri does not match registered URI"
           end
@@ -175,7 +192,7 @@ module Songkick
 
           return if @error
 
-          @authorization = @client.authorizations.find_by_code(@params[CODE])
+          @authorization = relying_party.authorizations.find_by_code(@params[CODE])
           validate_authorization
         end
 
@@ -188,7 +205,7 @@ module Songkick
 
           return if @error
 
-          @authorization = Provider.handle_password(@client, @params[USERNAME], @params[PASSWORD], scopes)
+          @authorization = Provider.handle_password(relying_party, @params[USERNAME], @params[PASSWORD], scopes)
           return validate_authorization if @authorization
 
           @error = INVALID_GRANT
@@ -213,7 +230,7 @@ module Songkick
           return if @error
 
           assertion = Assertion.new(@params)
-          @authorization = Provider.handle_assertion(@client, assertion, scopes)
+          @authorization = Provider.handle_assertion(relying_party, assertion, scopes)
           return validate_authorization if @authorization
 
           @error = UNAUTHORIZED_CLIENT
@@ -222,7 +239,7 @@ module Songkick
 
         def validate_refresh_token
           refresh_token_hash = Songkick::OAuth2.hashify(@params[REFRESH_TOKEN])
-          @authorization = @client.authorizations.find_by_refresh_token_hash(refresh_token_hash)
+          @authorization = relying_party.authorizations.find_by_refresh_token_hash(refresh_token_hash)
           validate_authorization
         end
 
