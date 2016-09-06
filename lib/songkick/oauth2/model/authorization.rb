@@ -27,7 +27,8 @@ module Songkick
         hashes_attributes :access_token, :refresh_token
 
         def self.create_code(client: client, additional_attributes: {})
-          Songkick::OAuth2.generate_id(attributes: code_gen_attributes(additional_attributes)) do |code|
+          # Songkick::OAuth2.generate_id(attributes: code_gen_attributes(additional_attributes)) do |code|
+          Provider::SecureCodeScheme.new.generate(attributes: code_gen_attributes(additional_attributes)) do |code|
             Helpers.count(client.authorizations, :code => code).zero?
           end
         end
@@ -43,15 +44,17 @@ module Songkick
         end
 
         def self.create_access_token
-          Songkick::OAuth2.generate_id do |token|
-            hash = Songkick::OAuth2.hashify(token)
+          # Songkick::OAuth2.generate_id do |token|
+          Provider::SecureCodeScheme.new.generate do |token|
+            hash = Provider::SecureCodeScheme.new.hashify(token)
             Helpers.count(self, :access_token_hash => hash).zero?
           end
         end
 
         def self.create_refresh_token(client)
-          Songkick::OAuth2.generate_id do |refresh_token|
-            hash = Songkick::OAuth2.hashify(refresh_token)
+          # Songkick::OAuth2.generate_id do |refresh_token|
+          Provider::SecureCodeScheme.new.generate do |refresh_token|
+            hash = Provider::SecureCodeScheme.new.hashify(refresh_token)
             Helpers.count(client.authorizations, :refresh_token_hash => hash).zero?
           end
         end
@@ -118,6 +121,8 @@ module Songkick
         end
 
         def generate_code(additional_attributes: {})
+          # TODO: This is only called once, and the memorisation might effect the resending
+          # of failure calls that use varying PKCE codes
           self.code ||= self.class.create_code(client: client, additional_attributes: additional_attributes)
           save && code
         end

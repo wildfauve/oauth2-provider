@@ -238,7 +238,7 @@ module Songkick
         end
 
         def validate_refresh_token
-          refresh_token_hash = Songkick::OAuth2.hashify(@params[REFRESH_TOKEN])
+          refresh_token_hash = Provider::SecureCodeScheme.new.hashify(@params[REFRESH_TOKEN])
           @authorization = relying_party.authorizations.find_by_refresh_token_hash(refresh_token_hash)
           validate_authorization
         end
@@ -258,8 +258,11 @@ module Songkick
           # we need to validate using the code_verifier
           if relying_party.native_app?
 
-            code, method = Songkick::OAuth2.pkce_code_de_tokenise(Songkick::OAuth2.pkce_decrypt(@params[CODE]))
-            ver = Songkick::OAuth2.pkce_run_hash_on_verifier(@params[CODE_VERIFIER], method)
+            secure_scheme = Provider::SecureCodeScheme.new
+
+            code, method = secure_scheme.pkce_decode_code_and_method(@params[CODE])
+
+            ver = secure_scheme.pkce_run_hash_on_verifier(@params[CODE_VERIFIER], method)
 
             unless code == ver
               @error = INVALID_GRANT

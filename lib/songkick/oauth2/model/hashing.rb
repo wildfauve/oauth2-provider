@@ -7,7 +7,7 @@ module Songkick
           attributes.each do |attribute|
             define_method("#{attribute}=") do |value|
               instance_variable_set("@#{attribute}", value)
-              __send__("#{attribute}_hash=", value && Songkick::OAuth2.hashify(value))
+              __send__("#{attribute}_hash=", value && Provider::SecureCodeScheme.new.hashify(value))
             end
             attr_reader attribute
           end
@@ -26,4 +26,3 @@ module Songkick
     end
   end
 end
-

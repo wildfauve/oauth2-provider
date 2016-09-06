@@ -110,7 +110,7 @@ describe Songkick::OAuth2::Provider do
           :owner  => @owner,
           :client => @client,
           :code   => nil,
-          :access_token => Songkick::OAuth2.hashify('complete_token'))
+          :access_token => Provider::SecureCodeScheme.new.hashify('complete_token'))
       end
 
       it "immediately redirects with a new code" do
@@ -452,7 +452,7 @@ describe Songkick::OAuth2::Provider do
           post(params)
           @authorization.reload
           @authorization.code.should be_nil
-          @authorization.access_token_hash.should == Songkick::OAuth2.hashify('random_access_token')
+          @authorization.access_token_hash.should == Provider::SecureCodeScheme.new.hashify('random_access_token')
         end
       end
     end
@@ -501,7 +501,7 @@ describe Songkick::OAuth2::Provider do
         before { Songkick::OAuth2::Provider.enforce_ssl = true }
 
         let(:authorization) do
-          Songkick::OAuth2::Model::Authorization.find_by_access_token_hash(Songkick::OAuth2.hashify('magic-key'))
+          Songkick::OAuth2::Model::Authorization.find_by_access_token_hash(Provider::SecureCodeScheme.new.hashify('magic-key'))
         end
 
         it "blocks access when not using HTTPS" do
@@ -512,17 +512,17 @@ describe Songkick::OAuth2::Provider do
         end
 
         it "destroys the access token since it's been leaked" do
-          authorization.access_token_hash.should == Songkick::OAuth2.hashify('magic-key')
+          authorization.access_token_hash.should == Provider::SecureCodeScheme.new.hashify('magic-key')
           request('/user_profile', 'oauth_token' => 'magic-key')
           authorization.reload
           authorization.access_token_hash.should be_nil
         end
 
         it "keeps the access token if the wrong key is passed" do
-          authorization.access_token_hash.should == Songkick::OAuth2.hashify('magic-key')
+          authorization.access_token_hash.should == Provider::SecureCodeScheme.new.hashify('magic-key')
           request('/user_profile', 'oauth_token' => 'is-the-password-books')
           authorization.reload
-          authorization.access_token_hash.should == Songkick::OAuth2.hashify('magic-key')
+          authorization.access_token_hash.should == Provider::SecureCodeScheme.new.hashify('magic-key')
         end
       end
     end
@@ -572,4 +572,3 @@ describe Songkick::OAuth2::Provider do
     end
   end
 end
-
