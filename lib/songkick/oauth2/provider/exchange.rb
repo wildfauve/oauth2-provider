@@ -7,7 +7,7 @@ module Songkick
 
         REQUIRED_PARAMS    = [CLIENT_ID, CLIENT_SECRET, GRANT_TYPE]
 
-        NATIVE_APP_REQUIRED_PARAMS = [GRANT_TYPE]
+        NATIVE_APP_REQUIRED_PARAMS = [GRANT_TYPE, CODE_VERIFIER]
 
         VALID_GRANT_TYPES  = [AUTHORIZATION_CODE, PASSWORD, ASSERTION, REFRESH_TOKEN, CLIENT_CREDENTIALS]
 
@@ -253,6 +253,23 @@ module Songkick
             @error = INVALID_GRANT
             @error_description = 'The access grant you supplied is invalid'
           end
+
+          # The code is actually a PKCE code when from a native apps
+          # we need to validate using the code_verifier
+          if relying_party.native_app?
+
+            code, method = Songkick::OAuth2.pkce_code_de_tokenise(Songkick::OAuth2.pkce_decrypt(@params[CODE]))
+            ver = Songkick::OAuth2.pkce_run_hash_on_verifier(@params[CODE_VERIFIER], method)
+
+            unless code == ver
+              @error = INVALID_GRANT
+              @error_description = 'Code verifier does not agree with code challenge'
+            end
+
+            binding.pry
+
+          end
+
         end
       end
 

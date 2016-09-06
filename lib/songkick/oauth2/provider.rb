@@ -38,6 +38,10 @@ module Songkick
       cipher.update(Base64.urlsafe_decode64(code)) + cipher.final
     end
 
+    def self.pkce_run_hash_on_verifier(verifier, method)
+      Digest::SHA256.base64digest(verifier)
+    end
+
     def self.aes_cipher(direction)
       cipher = OpenSSL::Cipher::AES.new(256, :CBC)
       cipher.send(direction)
@@ -50,8 +54,8 @@ module Songkick
       "#{challenge}:#{method}"
     end
 
-    def self.pkce_de_tokenise(string)
-
+    def self.pkce_code_de_tokenise(string)
+      string.split(":")
     end
 
 
@@ -89,6 +93,7 @@ module Songkick
     CODE_CHALLENGE         = 'code_challenge'
     CODE_CHALLENGE_METHOD  = 'code_challenge_method'
     CODE_CHALLENGE_HASH_METHOD = 'S256'
+    CODE_VERIFIER          = 'code_verifier'
     DURATION               = 'duration'
     ERROR                  = 'error'
     ERROR_DESCRIPTION      = 'error_description'
