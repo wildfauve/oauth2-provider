@@ -9,6 +9,9 @@ module Songkick
                     :error, :error_description
 
         REQUIRED_PARAMS = [RESPONSE_TYPE, CLIENT_ID, REDIRECT_URI]
+
+        NATIVE_APP_REQUIRED_PARAMS = REQUIRED_PARAMS + [CODE_CHALLENGE, CODE_CHALLENGE_METHOD]
+
         VALID_PARAMS    = REQUIRED_PARAMS + [SCOPE, STATE, LOGIN_HINT]
         VALID_RESPONSES = [CODE, TOKEN, CODE_AND_TOKEN]
 
@@ -25,12 +28,13 @@ module Songkick
           return unless @owner and not @error
 
           @model = @owner.oauth2_authorization_for(@client)
+
           return unless @model and @model.in_scope?(scopes) and not @model.expired?
 
           @authorized = true
 
           if @params[RESPONSE_TYPE] =~ /code/
-            @code = @model.generate_code
+            @code = @model.generate_code(additional_attributes: @params)
           end
 
           if @params[RESPONSE_TYPE] =~ /token/
@@ -126,6 +130,10 @@ module Songkick
           @error.nil?
         end
 
+        def relying_party
+          @client
+        end
+
       private
 
         def validate!
@@ -141,12 +149,24 @@ module Songkick
             @error_description = "Unknown client ID #{@params[CLIENT_ID]}"
           end
 
-          REQUIRED_PARAMS.each do |param|
+          checked_params = relying_party.native_app? ? NATIVE_APP_REQUIRED_PARAMS : REQUIRED_PARAMS
+
+          checked_params.each do |param|
             next if @params.has_key?(param)
             @error = INVALID_REQUEST
             @error_description = "Missing required parameter #{param}"
           end
           return if @error
+
+          # Check that the code_challenge_method is "S256" when PKCE is enabled (for native_apps)
+          if relying_party.native_app?
+            if @params[CODE_CHALLENGE_METHOD] != CODE_CHALLENGE_HASH_METHOD
+              @error = INVALID_REQUEST
+              @error_description = "Code code_challenge_method MUST be 'SHA256'"
+            end
+          end
+          return if @error
+
 
           [SCOPE, STATE].each do |param|
             next unless @params.has_key?(param)
@@ -171,6 +191,7 @@ module Songkick
             @error = REDIRECT_MISMATCH
             @error_description = "Parameter #{REDIRECT_URI} does not match registered URI"
           end
+
         end
 
         def to_query_string(*ivars)
@@ -185,4 +206,3 @@ module Songkick
     end
   end
 end
-

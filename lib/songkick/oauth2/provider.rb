@@ -28,10 +28,48 @@ module Songkick
       end
     end
 
-    def self.generate_id(&predicate)
-      id = random_string
-      id = random_string until predicate.call(id)
-      id
+    def self.pkce_string(attributes)
+      cipher = aes_cipher(:encrypt)
+      Base64.urlsafe_encode64(cipher.update(pkce_tokenise(attributes[CODE_CHALLENGE.to_sym], attributes[CODE_CHALLENGE_METHOD.to_sym])) + cipher.final)
+    end
+
+    def self.pkce_decrypt(code)
+      cipher = aes_cipher(:decrypt)
+      cipher.update(Base64.urlsafe_decode64(code)) + cipher.final
+    end
+
+    def self.aes_cipher(direction)
+      cipher = OpenSSL::Cipher::AES.new(256, :CBC)
+      cipher.send(direction)
+      cipher.key = "bff19d8c59f31f68d70e34abae5c93420c17f50bc3c278878593ced6b03d916d"
+      cipher.iv = "aa8dbfb30de9bac490cab3aa551376add3462bb9080e0d534f8301cd094f56a7"
+      cipher
+    end
+
+    def self.pkce_tokenise(challenge, method)
+      "#{challenge}:#{method}"
+    end
+
+    def self.pkce_de_tokenise(string)
+
+    end
+
+
+    # Generates a SecureRandom string until the predicate is met
+    # (i.e. as long as the code is not already used)
+    # There are 2 code gen strategies,
+    # - opaque, default, standard SecureRandom string
+    # - pkce, for PKCE enabled clients
+    def self.generate_id(attributes: {code_type: OPAQUE}, &predicate)
+      tuple = case attributes[:code_type]
+      when OPAQUE
+        [random_string, :random_string]
+      when PKCE
+        [pkce_string(attributes), :pkce_string]
+      else  # Shouldn't get here, but assume opaque
+        [random_string, :random_string]
+      end
+      self.send(tuple[1]) until predicate.call(tuple[0])
     end
 
     def self.hashify(token)
@@ -48,22 +86,26 @@ module Songkick
     CLIENT_SECRET          = 'client_secret'
     CODE                   = 'code'
     CODE_AND_TOKEN         = 'code_and_token'
+    CODE_CHALLENGE         = 'code_challenge'
+    CODE_CHALLENGE_METHOD  = 'code_challenge_method'
+    CODE_CHALLENGE_HASH_METHOD = 'S256'
     DURATION               = 'duration'
     ERROR                  = 'error'
     ERROR_DESCRIPTION      = 'error_description'
     EXPIRES_IN             = 'expires_in'
     GRANT_TYPE             = 'grant_type'
+    LOGIN_HINT             = 'login_hint'
     OAUTH_TOKEN            = 'oauth_token'
+    OPAQUE                 = 'opaque'
     PASSWORD               = 'password'
+    PKCE                   = 'pkce'
     REDIRECT_URI           = 'redirect_uri'
     REFRESH_TOKEN          = 'refresh_token'
     RESPONSE_TYPE          = 'response_type'
     SCOPE                  = 'scope'
     STATE                  = 'state'
-    LOGIN_HINT             = 'login_hint'
     TOKEN                  = 'token'
     USERNAME               = 'username'
-
     INVALID_REQUEST        = 'invalid_request'
     UNSUPPORTED_RESPONSE   = 'unsupported_response_type'
     REDIRECT_MISMATCH      = 'redirect_uri_mismatch'
@@ -145,4 +187,3 @@ module Songkick
 
   end
 end
-

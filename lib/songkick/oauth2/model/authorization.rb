@@ -26,10 +26,22 @@ module Songkick
         extend Hashing
         hashes_attributes :access_token, :refresh_token
 
-        def self.create_code(client)
-          Songkick::OAuth2.generate_id do |code|
+        def self.create_code(client: client, additional_attributes: {})
+          binding.pry
+          Songkick::OAuth2.generate_id(attributes: code_gen_attributes(additional_attributes)) do |code|
             Helpers.count(client.authorizations, :code => code).zero?
           end
+        end
+
+        # When PKCE Atttributes (https://tools.ietf.org/html/rfc7636) are provided
+        # the code generation will use them as apposed to an opaque code
+        def self.code_gen_attributes(attr)
+          if attr.keys.include? CODE_CHALLENGE
+            {code_type: PKCE, code_challenge: attr[CODE_CHALLENGE], code_challenge_method: attr[CODE_CHALLENGE_METHOD]}
+          else
+            {code_type: OPAQUE}
+          end
+
         end
 
         def self.create_access_token
@@ -61,12 +73,12 @@ module Songkick
 
           case attributes[:response_type]
             when CODE
-              instance.code ||= create_code(client)
+              instance.code ||= create_code(client: client, additional_attributes: {})
             when TOKEN
               instance.access_token  ||= create_access_token
               instance.refresh_token ||= create_refresh_token(client)
             when CODE_AND_TOKEN
-              instance.code = create_code(client)
+              instance.code = create_code(client: client, additional_attributes: {})
               instance.access_token  ||= create_access_token
               instance.refresh_token ||= create_refresh_token(client)
           end
@@ -107,8 +119,8 @@ module Songkick
           expires_at && (expires_at - Time.now).ceil
         end
 
-        def generate_code
-          self.code ||= self.class.create_code(client)
+        def generate_code(additional_attributes: {})
+          self.code ||= self.class.create_code(client: client, additional_attributes: additional_attributes)
           save && code
         end
 
@@ -134,4 +146,3 @@ module Songkick
     end
   end
 end
-
