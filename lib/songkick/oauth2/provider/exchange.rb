@@ -266,8 +266,6 @@ module Songkick
               @error_description = 'Code verifier does not agree with code challenge'
             end
 
-            binding.pry
-
           end
 
         end

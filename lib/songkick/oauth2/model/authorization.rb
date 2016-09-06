@@ -27,7 +27,6 @@ module Songkick
         hashes_attributes :access_token, :refresh_token
 
         def self.create_code(client: client, additional_attributes: {})
-          binding.pry
           Songkick::OAuth2.generate_id(attributes: code_gen_attributes(additional_attributes)) do |code|
             Helpers.count(client.authorizations, :code => code).zero?
           end
@@ -41,7 +40,6 @@ module Songkick
           else
             {code_type: OPAQUE}
           end
-
         end
 
         def self.create_access_token
