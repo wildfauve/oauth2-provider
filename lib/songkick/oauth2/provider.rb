@@ -20,7 +20,7 @@ module Songkick
     autoload :Router, ROOT + '/oauth2/router'
     autoload :Schema, ROOT + '/oauth2/schema'
 
-    def self.random_string
+    def self.random_string(attributes: {})
       if defined? SecureRandom
         SecureRandom.hex(TOKEN_SIZE / 8).to_i(16).to_s(36)
       else
@@ -73,7 +73,9 @@ module Songkick
       else  # Shouldn't get here, but assume opaque
         [random_string, :random_string]
       end
-      self.send(tuple[1]) until predicate.call(tuple[0])
+      id = tuple[0]
+      id = self.send(tuple[1], attributes) until predicate.call(id)
+      id
     end
 
     def self.hashify(token)
