@@ -15,7 +15,7 @@ module Songkick
             error ||= Provider::Error.new('must be a POST request') unless request.post?
             Provider::Exchange.new(resource_owner, params, error)
           else
-            Provider::Authorization.new(resource_owner, params, error)
+            Provider::Authorization.new(resource_owner, params, error).()
           end
 
         end

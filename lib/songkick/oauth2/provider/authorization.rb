@@ -25,21 +25,26 @@ module Songkick
 
           validate!
 
+        end
+
+        def call
+
           return unless @owner and not @error
 
-          @model = @owner.oauth2_authorization_for(@client)
-
-          return unless @model and @model.in_scope?(scopes) and not @model.expired?
+          return self unless resource_owner_model and resource_owner_model.in_scope?(scopes) and not resource_owner_model.expired?
 
           @authorized = true
 
           if @params[RESPONSE_TYPE] =~ /code/
-            @code = @model.generate_code(additional_attributes: @params)
+            @code = resource_owner_model.generate_code(additional_attributes: @params)
           end
 
           if @params[RESPONSE_TYPE] =~ /token/
-            @access_token = @model.generate_access_token
+            @access_token = resource_owner_model.generate_access_token
           end
+
+          self
+
         end
 
         def scopes
@@ -48,22 +53,22 @@ module Songkick
         end
 
         def unauthorized_scopes
-          @model ? scopes.select { |s| not @model.in_scope?(s) } : scopes
+          resource_owner_model ? scopes.select { |s| not resource_owner_model.in_scope?(s) } : scopes
         end
 
         def grant_access!(options = {})
-          @model = Model::Authorization.for(@owner, @client,
+          resource_owner_model = Model::Authorization.for(@owner, relying_party,
             :response_type => @params[RESPONSE_TYPE],
             :scope         => @scope,
             :duration      => options[:duration])
 
-          @code          = @model.code
-          @access_token  = @model.access_token
-          @refresh_token = @model.refresh_token
-          @expires_in    = @model.expires_in
+          @code          = resource_owner_model.code
+          @access_token  = resource_owner_model.access_token
+          @refresh_token = resource_owner_model.refresh_token
+          @expires_in    = resource_owner_model.expires_in
 
           unless @params[RESPONSE_TYPE] == CODE
-            @expires_in = @model.expires_in
+            @expires_in = resource_owner_model.expires_in
           end
 
           @authorized = true
@@ -82,12 +87,12 @@ module Songkick
         end
 
         def redirect?
-          @client and (@authorized or not valid?)
+          relying_party and (@authorized or not valid?)
         end
 
         def redirect_uri
-          return nil unless @client
-          base_redirect_uri = @client.redirect_uri
+          return nil unless relying_party
+          base_redirect_uri = relying_party.redirect_uri
           q = (base_redirect_uri =~ /\?/) ? '&' : '?'
 
           if not valid?
@@ -123,7 +128,7 @@ module Songkick
         def response_status
           return 302 if redirect?
           return 200 if valid?
-          @client ? 302 : 400
+          relying_party ? 302 : 400
         end
 
         def valid?
@@ -131,31 +136,53 @@ module Songkick
         end
 
         def relying_party
-          @client
+          @client ||= @params[CLIENT_ID] && Model::Client.find_by_client_id(@params[CLIENT_ID])
+        end
+
+        def resource_owner_model
+          @model ||= @owner.oauth2_authorization_for(relying_party)
         end
 
       private
 
         def validate!
+          [ :check_transport_error,
+            :check_relying_party,
+            :check_params,
+            :check_code_challenge,
+            :check_for_new_lines,
+            :check_response_types,
+            :check_redirect_uri].each do |validation|
+              __send__(validation)
+              break if @error
+          end
+          binding.pry
+        end
+
+        def check_transport_error
           if @transport_error
             @error = @transport_error.error
             @error_description = @transport_error.error_description
-            return
           end
+        end
 
-          @client = @params[CLIENT_ID] && Model::Client.find_by_client_id(@params[CLIENT_ID])
-          unless @client
+        def check_relying_party
+          unless relying_party
             @error = INVALID_CLIENT
             @error_description = "Unknown client ID #{@params[CLIENT_ID]}"
           end
+        end
 
+        def check_params
           checked_params.each do |param|
             next if @params.has_key?(param)
             @error = INVALID_REQUEST
             @error_description = "Missing required parameter #{param}"
           end
-          return if @error
+        end
 
+
+        def check_code_challenge
           # Check that the code_challenge_method is "S256" when PKCE is enabled (for native_apps)
           if relying_party.native_app?
             if @params[CODE_CHALLENGE_METHOD] != CODE_CHALLENGE_HASH_METHOD
@@ -163,9 +190,9 @@ module Songkick
               @error_description = "Code code_challenge_method MUST be 'SHA256'"
             end
           end
-          return if @error
+        end
 
-
+        def check_for_new_lines
           [SCOPE, STATE].each do |param|
             next unless @params.has_key?(param)
             if @params[param] =~ /\r\n/
@@ -173,23 +200,20 @@ module Songkick
               @error_description = "Illegal value for #{param} parameter"
             end
           end
+        end
 
+        def check_response_types
           unless VALID_RESPONSES.include?(@params[RESPONSE_TYPE])
             @error = UNSUPPORTED_RESPONSE
             @error_description = "Response type #{@params[RESPONSE_TYPE]} is not supported"
           end
+        end
 
-          @client = Model::Client.find_by_client_id(@params[CLIENT_ID])
-          unless @client
-            @error = INVALID_CLIENT
-            @error_description = "Unknown client ID #{@params[CLIENT_ID]}"
-          end
-
-          if @client and @client.redirect_uri and @client.redirect_uri != @params[REDIRECT_URI]
+        def check_redirect_uri
+          if relying_party and relying_party.redirect_uri and relying_party.redirect_uri != @params[REDIRECT_URI]
             @error = REDIRECT_MISMATCH
             @error_description = "Parameter #{REDIRECT_URI} does not match registered URI"
           end
-
         end
 
         def checked_params
