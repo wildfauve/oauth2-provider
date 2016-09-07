@@ -262,6 +262,12 @@ module Songkick
 
             code, method = secure_scheme.pkce_decode_code_and_method(@params[CODE])
 
+            if code.nil?
+              @error = INVALID_GRANT
+              @error_description = 'Code is invalid'
+            end
+            return if @error
+
             ver = secure_scheme.pkce_run_hash_on_verifier(@params[CODE_VERIFIER], method)
 
             unless code == ver
