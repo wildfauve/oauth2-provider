@@ -149,8 +149,6 @@ module Songkick
             @error_description = "Unknown client ID #{@params[CLIENT_ID]}"
           end
 
-          checked_params = relying_party.native_app? ? NATIVE_APP_REQUIRED_PARAMS : REQUIRED_PARAMS
-
           checked_params.each do |param|
             next if @params.has_key?(param)
             @error = INVALID_REQUEST
@@ -192,6 +190,10 @@ module Songkick
             @error_description = "Parameter #{REDIRECT_URI} does not match registered URI"
           end
 
+        end
+
+        def checked_params
+          relying_party.try(:native_app?) ? NATIVE_APP_REQUIRED_PARAMS : REQUIRED_PARAMS
         end
 
         def to_query_string(*ivars)

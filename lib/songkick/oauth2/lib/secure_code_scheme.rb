@@ -46,7 +46,7 @@ module Songkick
         # Decrypt the auth code originally sent to the relying party
         def pkce_decrypt(code)
           cipher = aes_cipher(:decrypt)
-          cipher.update(Base64.urlsafe_decode64(code)) + cipher.final
+          cipher.update(Base64.urlsafe_decode64(code)) + cipher.final  rescue [nil, nil]
         end
 
 
