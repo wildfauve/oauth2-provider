@@ -238,7 +238,7 @@ module Songkick
         end
 
         def validate_refresh_token
-          refresh_token_hash = Provider::SecureCodeScheme.new.hashify(@params[REFRESH_TOKEN])
+          refresh_token_hash = Lib::SecureCodeScheme.new.hashify(@params[REFRESH_TOKEN])
           @authorization = relying_party.authorizations.find_by_refresh_token_hash(refresh_token_hash)
           validate_authorization
         end
@@ -258,7 +258,7 @@ module Songkick
           # we need to validate using the code_verifier
           if relying_party.native_app?
 
-            secure_scheme = Provider::SecureCodeScheme.new
+            secure_scheme = Lib::SecureCodeScheme.new
 
             code, method = secure_scheme.pkce_decode_code_and_method(@params[CODE])
 

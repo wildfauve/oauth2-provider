@@ -78,4 +78,3 @@ def create_authorization(params)
     end
   end
 end
-

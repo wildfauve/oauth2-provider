@@ -19,6 +19,7 @@ module Songkick
     autoload :Model,  ROOT + '/oauth2/model'
     autoload :Router, ROOT + '/oauth2/router'
     autoload :Schema, ROOT + '/oauth2/schema'
+    autoload :Lib,    ROOT + '/oauth2/lib'
 
     # def self.random_string(attributes: {})
     #   if defined? SecureRandom
@@ -125,6 +126,7 @@ module Songkick
     EXPIRED_TOKEN          = 'expired_token'
     INSUFFICIENT_SCOPE     = 'insufficient_scope'
     ACCESS_DENIED          = 'access_denied'
+    # SecureCode             = Lib::SecureCodeScheme.new
 
     class Provider
       EXPIRY_TIME = 3600
@@ -133,7 +135,7 @@ module Songkick
       autoload :Exchange,      ROOT + '/oauth2/provider/exchange'
       autoload :AccessToken,   ROOT + '/oauth2/provider/access_token'
       autoload :Error,         ROOT + '/oauth2/provider/error'
-      autoload :SecureCodeScheme,  ROOT + '/oauth2/provider/secure_code_scheme'
+      autoload :AuthHandler,   ROOT + '/oauth2/provider/auth_handler'
 
       class << self
         attr_accessor :realm, :enforce_ssl
@@ -184,13 +186,13 @@ module Songkick
         Router.parse(*args)
       end
 
-      def self.access_token(*args)
-        Router.access_token(*args)
-      end
+      # def self.access_token(*args)
+      #   Router.access_token(*args)
+      # end
 
-      def self.access_token_from_request(*args)
-        Router.access_token_from_request(*args)
-      end
+      # def self.access_token_from_request(*args)
+      #   Router.access_token_from_request(*args)
+      # end
     end
 
   end

@@ -13,10 +13,9 @@ Factory.define :owner, :class => TestApp::User do |u|
 end
 
 Factory.define :client, :class => Songkick::OAuth2::Model::Client do |c|
-  c.client_id     { Songkick::OAuth2.random_string }
-  c.client_secret { Songkick::OAuth2.random_string }
+  c.client_id     { Songkick::OAuth2::Lib::SecureCodeScheme.new.random_string }
+  c.client_secret { Songkick::OAuth2::Lib::SecureCodeScheme.new.random_string }
   c.name          { Factory.next :client_name }
   c.redirect_uri  'https://client.example.com/cb'
   c.owner
 end
-

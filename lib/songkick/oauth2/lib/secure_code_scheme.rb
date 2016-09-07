@@ -2,7 +2,7 @@ module Songkick
 
   module OAuth2
 
-    class Provider
+    module Lib
 
       class SecureCodeScheme
 
@@ -38,8 +38,8 @@ module Songkick
 
         # Take in the verifier that created the code challenge, and the method (usually S256)
         # and produce the original code challenge
-        def pkce_run_hash_on_verifier(verifier, method)
-          Digest::SHA256.hexdigest(verifier)
+        def pkce_run_hash_on_verifier(verifier, method = "S256")
+          Base64.urlsafe_encode64(Digest::SHA256.digest(verifier)).chomp("=")
         end
 
 

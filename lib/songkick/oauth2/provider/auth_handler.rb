@@ -1,0 +1,43 @@
+module Songkick
+
+  module OAuth2
+
+    class Provider
+
+      class AuthHandler
+
+        def initialize(request_value)
+          @request_value = request_value
+        end
+
+        def call
+          if params[GRANT_TYPE]
+            error ||= Provider::Error.new('must be a POST request') unless request.post?
+            Provider::Exchange.new(resource_owner, params, error)
+          else
+            Provider::Authorization.new(resource_owner, params, error)
+          end
+
+        end
+
+        private
+
+        def params
+          @request_value.params
+        end
+
+        def error
+          @request_value.error
+        end
+
+        def resource_owner
+          @request_value.resource_owner
+        end
+
+      end  # class
+
+    end  # provider
+
+  end  # oauth2
+
+end  # songkick

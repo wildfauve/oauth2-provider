@@ -26,9 +26,9 @@ module Songkick
         extend Hashing
         hashes_attributes :access_token, :refresh_token
 
-        def self.create_code(client: client, additional_attributes: {})
+        def self.create_code(client: , additional_attributes: {})
           # Songkick::OAuth2.generate_id(attributes: code_gen_attributes(additional_attributes)) do |code|
-          Provider::SecureCodeScheme.new.generate(attributes: code_gen_attributes(additional_attributes)) do |code|
+          Lib::SecureCodeScheme.new.generate(attributes: code_gen_attributes(additional_attributes)) do |code|
             Helpers.count(client.authorizations, :code => code).zero?
           end
         end
@@ -45,16 +45,16 @@ module Songkick
 
         def self.create_access_token
           # Songkick::OAuth2.generate_id do |token|
-          Provider::SecureCodeScheme.new.generate do |token|
-            hash = Provider::SecureCodeScheme.new.hashify(token)
+          Lib::SecureCodeScheme.new.generate do |token|
+            hash = Lib::SecureCodeScheme.new.hashify(token)
             Helpers.count(self, :access_token_hash => hash).zero?
           end
         end
 
         def self.create_refresh_token(client)
           # Songkick::OAuth2.generate_id do |refresh_token|
-          Provider::SecureCodeScheme.new.generate do |refresh_token|
-            hash = Provider::SecureCodeScheme.new.hashify(refresh_token)
+          Lib::SecureCodeScheme.new.generate do |refresh_token|
+            hash = Lib::SecureCodeScheme.new.hashify(refresh_token)
             Helpers.count(client.authorizations, :refresh_token_hash => hash).zero?
           end
         end

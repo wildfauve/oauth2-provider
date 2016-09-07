@@ -20,7 +20,7 @@ module Songkick
         before_create :generate_credentials
 
         def self.create_client_id
-          Provider::SecureCodeScheme.new.generate do |client_id|
+          Lib::SecureCodeScheme.new.generate do |client_id|
             Helpers.count(self, :client_id => client_id).zero?
           end
         end
@@ -53,7 +53,7 @@ module Songkick
 
         def generate_credentials
           self.client_id = self.class.create_client_id
-          self.client_secret = Songkick::OAuth2.random_string
+          self.client_secret = Songkick::OAuth2::Lib::SecureCodeScheme.new.random_string
         end
       end
 

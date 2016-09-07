@@ -20,6 +20,8 @@ module Songkick
 
           params = params.merge(auth)
 
+          # Provider::AuthHandler.new(build_value(params, resource_owner, error))
+
           if params[GRANT_TYPE]
             error ||= Provider::Error.new('must be a POST request') unless request.post?
             Provider::Exchange.new(resource_owner, params, error)
@@ -27,6 +29,11 @@ module Songkick
             Provider::Authorization.new(resource_owner, params, error)
           end
         end
+
+        def build_value(params, resource_owner, error)
+          Lib::RequestValue.new(params: params, resource_owner: resource_owner, error: error)
+        end
+
 
         def access_token(resource_owner, scopes, env)
           access_token = access_token_from_request(env)
