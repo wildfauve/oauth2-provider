@@ -34,6 +34,10 @@ module Songkick
           @request_value.resource_owner
         end
 
+        def request
+          @request_value.request
+        end
+
       end  # class
 
     end  # provider

@@ -6,14 +6,14 @@ module Songkick
 
       class RequestValue
 
-        attr_reader :resource_owner, :params, :error
+        attr_reader :resource_owner, :params, :error, :request
 
-        def initialize(resource_owner:, params:, error: )
+        def initialize(resource_owner:, params:, error:, request:)
           @resource_owner = resource_owner
           @params = params
           @error = error
+          @request = request
         end
-
 
       end
 
