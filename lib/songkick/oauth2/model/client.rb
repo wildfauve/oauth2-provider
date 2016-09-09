@@ -39,7 +39,7 @@ module Songkick
         end
 
         def native_app?
-          oauth2_client_owner_type == "native_app"
+          client_type == "native_app"
         end
 
       private

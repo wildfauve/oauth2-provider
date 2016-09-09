@@ -5,13 +5,13 @@ module Songkick
       class Exchange
         attr_reader :client, :error, :error_description
 
-        REQUIRED_PARAMS    = [CLIENT_ID, CLIENT_SECRET, GRANT_TYPE]
+        REQUIRED_PARAMS = [CLIENT_ID, CLIENT_SECRET, GRANT_TYPE]
 
         NATIVE_APP_REQUIRED_PARAMS = [GRANT_TYPE, CODE_VERIFIER]
 
-        VALID_GRANT_TYPES  = [AUTHORIZATION_CODE, PASSWORD, ASSERTION, REFRESH_TOKEN, CLIENT_CREDENTIALS]
+        VALID_GRANT_TYPES = [AUTHORIZATION_CODE, PASSWORD, ASSERTION, REFRESH_TOKEN, CLIENT_CREDENTIALS]
 
-        REQUIRED_PASSWORD_PARAMS  = [USERNAME, PASSWORD]
+        REQUIRED_PASSWORD_PARAMS = [USERNAME, PASSWORD]
         REQUIRED_ASSERTION_PARAMS = [ASSERTION_TYPE, ASSERTION]
 
         RESPONSE_HEADERS = {
@@ -29,8 +29,10 @@ module Songkick
           validate!
         end
 
-        def owner
-          @authorization && @authorization.owner
+        # To keep the 2 handlers (this and Authorization) consistent, the call returns itself
+        # as the caller drives the coordination here.
+        def call
+          self
         end
 
         def redirect?
@@ -76,8 +78,6 @@ module Songkick
           @error.nil?
         end
 
-      private
-
         def relying_party
           # native apps may not provide a client_id, so we need to
           # use the authorization_code to index into the client
@@ -86,9 +86,14 @@ module Songkick
           else
             Model::Authorization.find_by_code(@params[CODE]).try(:client)
           end
-
         end
 
+        def owner
+          @authorization && @authorization.owner
+        end
+
+
+      private
 
         def jsonize(*ivars)
           hash = {}
@@ -97,31 +102,39 @@ module Songkick
         end
 
         def validate!
+
+          [ :check_transport_error,
+            :determine_relying_party_intent,
+            :validate_required_params,
+            :validate_client,
+            :validate_grant_types,
+            :validate_grant,
+            :validate_scope
+          ].each do |validation|
+            __send__(validation)
+            break if @error
+          end
+        end
+
+        def check_transport_error
           if @transport_error
             @error = @transport_error.error
             @error_description = @transport_error.error_description
             return
           end
+        end
 
-          determine_relying_party_intent
-
-          return if @error
-
-          validate_required_params
-
-          return if @error
-
-          validate_client
-
+        def validate_grant_types
           unless VALID_GRANT_TYPES.include?(@grant_type)
             @error = UNSUPPORTED_GRANT_TYPE
             @error_description = "The grant type #{@grant_type} is not recognized"
           end
-          return if @error
-
-          __send__("validate_#{@grant_type}")
-          validate_scope
         end
+
+        def validate_grant
+          __send__("validate_#{@grant_type}")
+        end
+
 
         def determine_relying_party_intent
           if access_by_code

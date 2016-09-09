@@ -26,11 +26,9 @@ module Songkick
         extend Hashing
         hashes_attributes :access_token, :refresh_token
 
-        def self.create_code(client: , additional_attributes: {})
-          # Songkick::OAuth2.generate_id(attributes: code_gen_attributes(additional_attributes)) do |code|
-          Lib::SecureCodeScheme.new.generate(attributes: code_gen_attributes(additional_attributes)) do |code|
-            Helpers.count(client.authorizations, :code => code).zero?
-          end
+        def self.create_code(client: , additional_attributes: {}, predicate: )
+          Lib::SecureCodeScheme.new.generate( attributes: code_gen_attributes(additional_attributes),
+                                              predicate: predicate)
         end
 
         # When PKCE Atttributes (https://tools.ietf.org/html/rfc7636) are provided
@@ -44,19 +42,18 @@ module Songkick
         end
 
         def self.create_access_token
-          # Songkick::OAuth2.generate_id do |token|
-          Lib::SecureCodeScheme.new.generate do |token|
+          Lib::SecureCodeScheme.new.generate(predicate: ->(token) {
             hash = Lib::SecureCodeScheme.new.hashify(token)
             Helpers.count(self, :access_token_hash => hash).zero?
-          end
+          })
         end
 
         def self.create_refresh_token(client)
           # Songkick::OAuth2.generate_id do |refresh_token|
-          Lib::SecureCodeScheme.new.generate do |refresh_token|
+          Lib::SecureCodeScheme.new.generate(predicate: ->(refresh_token) {
             hash = Lib::SecureCodeScheme.new.hashify(refresh_token)
             Helpers.count(client.authorizations, :refresh_token_hash => hash).zero?
-          end
+          })
         end
 
         def self.for(owner, client, attributes = {})
@@ -120,10 +117,12 @@ module Songkick
           expires_at && (expires_at - Time.now).ceil
         end
 
-        def generate_code(additional_attributes: {})
+        def generate_code(additional_attributes: {}, predicate: )
           # TODO: This is only called once, and the memorisation might effect the resending
           # of failure calls that use varying PKCE codes
-          self.code ||= self.class.create_code(client: client, additional_attributes: additional_attributes)
+          # self.code ||= self.class.create_code(client: client, additional_attributes: additional_attributes)
+          binding.pry
+          self.code = self.class.create_code(client: client, additional_attributes: additional_attributes, predicate: predicate)
           save && code
         end
 

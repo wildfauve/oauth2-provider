@@ -8,16 +8,20 @@ module Songkick
 
         def initialize(request_value)
           @request_value = request_value
-        end
-
-        def call
-          if params[GRANT_TYPE]
+          @handler = if params[GRANT_TYPE]
             error ||= Provider::Error.new('must be a POST request') unless request.post?
             Provider::Exchange.new(resource_owner, params, error)
           else
-            Provider::Authorization.new(resource_owner, params, error).()
+            Provider::Authorization.new(resource_owner, params, error)
           end
+        end
 
+        def call
+          @handler.()
+        end
+
+        def configuration
+          @handler
         end
 
         private

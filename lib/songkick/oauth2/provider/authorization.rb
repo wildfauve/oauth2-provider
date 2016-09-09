@@ -10,9 +10,13 @@ module Songkick
 
         REQUIRED_PARAMS = [RESPONSE_TYPE, CLIENT_ID, REDIRECT_URI]
 
-        NATIVE_APP_REQUIRED_PARAMS = REQUIRED_PARAMS + [CODE_CHALLENGE, CODE_CHALLENGE_METHOD]
+        ADDITIONAL_NATIVE_PARAMS = [CODE_CHALLENGE, CODE_CHALLENGE_METHOD]
+
+        NATIVE_APP_REQUIRED_PARAMS = REQUIRED_PARAMS + ADDITIONAL_NATIVE_PARAMS
 
         VALID_PARAMS    = REQUIRED_PARAMS + [SCOPE, STATE, LOGIN_HINT]
+        VALID_NATIVE_PARAMS = VALID_PARAMS +  ADDITIONAL_NATIVE_PARAMS
+
         VALID_RESPONSES = [CODE, TOKEN, CODE_AND_TOKEN]
 
         def initialize(resource_owner, params, transport_error = nil)
@@ -29,14 +33,14 @@ module Songkick
 
         def call
 
-          return unless @owner and not @error
+          return self unless @owner and not @error
 
           return self unless resource_owner_model and resource_owner_model.in_scope?(scopes) and not resource_owner_model.expired?
 
           @authorized = true
 
           if @params[RESPONSE_TYPE] =~ /code/
-            @code = resource_owner_model.generate_code(additional_attributes: @params)
+            @code = resource_owner_model.generate_code(additional_attributes: @params, predicate: code_predicate_function)
           end
 
           if @params[RESPONSE_TYPE] =~ /token/
@@ -57,18 +61,18 @@ module Songkick
         end
 
         def grant_access!(options = {})
-          resource_owner_model = Model::Authorization.for(@owner, relying_party,
+          auth = Model::Authorization.for(@owner, relying_party,
             :response_type => @params[RESPONSE_TYPE],
             :scope         => @scope,
             :duration      => options[:duration])
 
-          @code          = resource_owner_model.code
-          @access_token  = resource_owner_model.access_token
-          @refresh_token = resource_owner_model.refresh_token
-          @expires_in    = resource_owner_model.expires_in
+          @code          = auth.code
+          @access_token  = auth.access_token
+          @refresh_token = auth.refresh_token
+          @expires_in    = auth.expires_in
 
           unless @params[RESPONSE_TYPE] == CODE
-            @expires_in = resource_owner_model.expires_in
+            @expires_in = auth.expires_in
           end
 
           @authorized = true
@@ -82,7 +86,7 @@ module Songkick
 
         def params
           params = {}
-          VALID_PARAMS.each { |key| params[key] = @params[key] if @params.has_key?(key) }
+          valid_params.each { |key| params[key] = @params[key] if @params.has_key?(key) }
           params
         end
 
@@ -135,12 +139,24 @@ module Songkick
           @error.nil?
         end
 
+        def code_predicate_function
+          if native_app_client?
+            ->(code) {true}
+          else
+            ->(code) {Model::Helpers.count(relying_party.authorizations, :code => code).zero?}
+          end
+        end
+
         def relying_party
           @client ||= @params[CLIENT_ID] && Model::Client.find_by_client_id(@params[CLIENT_ID])
         end
 
         def resource_owner_model
           @model ||= @owner.oauth2_authorization_for(relying_party)
+        end
+
+        def native_app_client?
+          relying_party.try(:native_app?)
         end
 
       private
@@ -156,7 +172,6 @@ module Songkick
               __send__(validation)
               break if @error
           end
-          binding.pry
         end
 
         def check_transport_error
@@ -217,7 +232,11 @@ module Songkick
         end
 
         def checked_params
-          relying_party.try(:native_app?) ? NATIVE_APP_REQUIRED_PARAMS : REQUIRED_PARAMS
+          native_app_client? ? NATIVE_APP_REQUIRED_PARAMS : REQUIRED_PARAMS
+        end
+
+        def valid_params
+          native_app_client? ? VALID_NATIVE_PARAMS : VALID_PARAMS
         end
 
         def to_query_string(*ivars)
