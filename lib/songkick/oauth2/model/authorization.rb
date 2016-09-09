@@ -26,7 +26,7 @@ module Songkick
         extend Hashing
         hashes_attributes :access_token, :refresh_token
 
-        def self.create_code(client: , additional_attributes: {}, predicate: )
+        def self.create_code(client: , additional_attributes: {}, predicate: nil)
           Lib::SecureCodeScheme.new.generate( attributes: code_gen_attributes(additional_attributes),
                                               predicate: predicate)
         end
@@ -71,12 +71,12 @@ module Songkick
 
           case attributes[:response_type]
             when CODE
-              instance.code ||= create_code(client: client, additional_attributes: {})
+              instance.code ||= create_code(client: client, additional_attributes: {}, predicate: nil)
             when TOKEN
               instance.access_token  ||= create_access_token
               instance.refresh_token ||= create_refresh_token(client)
             when CODE_AND_TOKEN
-              instance.code = create_code(client: client, additional_attributes: {})
+              instance.code = create_code(client: client, additional_attributes: {}, predicate: nil)
               instance.access_token  ||= create_access_token
               instance.refresh_token ||= create_refresh_token(client)
           end
@@ -120,9 +120,8 @@ module Songkick
         def generate_code(additional_attributes: {}, predicate: )
           # TODO: This is only called once, and the memorisation might effect the resending
           # of failure calls that use varying PKCE codes
-          # self.code ||= self.class.create_code(client: client, additional_attributes: additional_attributes)
-          binding.pry
-          self.code = self.class.create_code(client: client, additional_attributes: additional_attributes, predicate: predicate)
+          # Also, memorisation is expected in the tests
+          self.code ||= self.class.create_code(client: client, additional_attributes: additional_attributes, predicate: predicate)
           save && code
         end
 

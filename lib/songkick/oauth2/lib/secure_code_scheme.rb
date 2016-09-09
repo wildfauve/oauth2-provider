@@ -14,7 +14,7 @@ module Songkick
         # - predicate; a lambda that returns true/false; to test for possible code duplicates
         # e.g
         # code = generate(attributes: {code_type: 'pkce',code_challenge: "", code_challenge_method: "S256"}) {|x| true}
-        def generate(attributes: {code_type: OPAQUE}, predicate: ->(x) {true})
+        def generate(attributes: {code_type: OPAQUE}, predicate: )
           tuple = case attributes[:code_type]
           when OPAQUE
             [random_string, :random_string]
@@ -24,8 +24,12 @@ module Songkick
             [random_string, :random_string]
           end
           id = tuple[0]
-          id = send(tuple[1], attributes) until predicate.call(id)
+          id = send(tuple[1], attributes) until predicate_function(predicate).call(id)
           id
+        end
+
+        def predicate_function(predicate)
+          predicate ? predicate : ->(x) {true}
         end
 
         # A PKCE code is provided.

@@ -20,9 +20,9 @@ module Songkick
         before_create :generate_credentials
 
         def self.create_client_id
-          Lib::SecureCodeScheme.new.generate do |client_id|
+          Lib::SecureCodeScheme.new.generate(predicate: ->(client_id) {
             Helpers.count(self, :client_id => client_id).zero?
-          end
+          })
         end
 
         attr_reader :client_secret
