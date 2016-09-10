@@ -48,6 +48,7 @@ module Songkick
     REFRESH_TOKEN          = 'refresh_token'
     RESPONSE_TYPE          = 'response_type'
     SCOPE                  = 'scope'
+    SCOPES                 = 'scopes'
     STATE                  = 'state'
     TOKEN                  = 'token'
     USERNAME               = 'username'

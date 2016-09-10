@@ -69,26 +69,26 @@ module Songkick
                        authorization.client = client
                      end
 
-          case attributes[:response_type]
+          case attributes[RESPONSE_TYPE]
             when CODE
-              instance.code ||= create_code(client: client, additional_attributes: {}, predicate: nil)
+              instance.code ||= create_code(client: client, additional_attributes: attributes , predicate: nil)
             when TOKEN
               instance.access_token  ||= create_access_token
               instance.refresh_token ||= create_refresh_token(client)
             when CODE_AND_TOKEN
-              instance.code = create_code(client: client, additional_attributes: {}, predicate: nil)
+              instance.code = create_code(client: client, additional_attributes: attributes, predicate: nil)
               instance.access_token  ||= create_access_token
               instance.refresh_token ||= create_refresh_token(client)
           end
 
-          if attributes[:duration]
-            instance.expires_at = Time.now + attributes[:duration].to_i
+          if attributes[DURATION]
+            instance.expires_at = Time.now + attributes[DURATION].to_i
           else
             instance.expires_at = nil
           end
 
-          scopes = instance.scopes + (attributes[:scopes] || [])
-          scopes += attributes[:scope].split(/\s+/) if attributes[:scope]
+          scopes = instance.scopes + (attributes[SCOPES] || [])
+          scopes += attributes[SCOPE].split(/\s+/) if attributes[SCOPE]
           instance.scope = scopes.empty? ? nil : scopes.entries.join(' ')
 
           instance.save && instance
@@ -121,7 +121,11 @@ module Songkick
           # TODO: This is only called once, and the memorisation might effect the resending
           # of failure calls that use varying PKCE codes
           # Also, memorisation is expected in the tests
-          self.code ||= self.class.create_code(client: client, additional_attributes: additional_attributes, predicate: predicate)
+          if client.native_app?
+            self.code = self.class.create_code(client: client, additional_attributes: additional_attributes, predicate: predicate)
+          else
+            self.code ||= self.class.create_code(client: client, additional_attributes: additional_attributes, predicate: predicate)
+          end
           save && code
         end
 

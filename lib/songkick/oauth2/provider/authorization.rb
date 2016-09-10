@@ -32,7 +32,6 @@ module Songkick
         end
 
         def call
-
           return self unless @owner and not @error
 
           return self unless resource_owner_model and resource_owner_model.in_scope?(scopes) and not resource_owner_model.expired?
@@ -61,10 +60,11 @@ module Songkick
         end
 
         def grant_access!(options = {})
-          auth = Model::Authorization.for(@owner, relying_party,
-            :response_type => @params[RESPONSE_TYPE],
-            :scope         => @scope,
-            :duration      => options[:duration])
+          auth = Model::Authorization.for(@owner, relying_party, params.merge('duration' => options[:duration]))
+            # :response_type => @params[RESPONSE_TYPE],
+            # :scope         => @scope,
+            # :duration      => options[:duration],
+            # )
 
           @code          = auth.code
           @access_token  = auth.access_token
