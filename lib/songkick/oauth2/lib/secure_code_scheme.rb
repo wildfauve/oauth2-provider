@@ -13,7 +13,7 @@ module Songkick
         # - pkce, for PKCE enabled clients
         # - predicate; a lambda that returns true/false; to test for possible code duplicates
         # e.g
-        # code = generate(attributes: {code_type: 'pkce',code_challenge: "", code_challenge_method: "S256"}) {|x| true}
+        # code = generate(attributes: {code_type: 'pkce',code_challenge: "", code_challenge_method: "S256"}, predicate: ->() {true})
         def generate(attributes: {code_type: OPAQUE}, predicate: )
           tuple = case attributes[:code_type]
           when OPAQUE

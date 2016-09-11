@@ -7,6 +7,14 @@ module FlickAuth
       # coerces to Rack requests. This is for backward compatibility; originally
       # it only took request objects.
 
+      # The values are required from the request
+      # + From Environment:
+      #   + request.params
+      #   + request.request_uri (which gives request.params)
+      #   + HTTP AUTHORIZATION header (client_id and secret)
+      #   + request.ssl
+      # + SSL configuration
+
       class << self
         def parse(resource_owner, env)
           error   = detect_transport_error(env)
@@ -30,7 +38,6 @@ module FlickAuth
 
 
         def access_token(resource_owner, scopes, env)
-          binding.pry
           access_token = access_token_from_request(env)
           Provider::AccessToken.new(resource_owner,
                                     scopes,

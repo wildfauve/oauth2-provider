@@ -163,10 +163,12 @@ module FlickAuth
         end
 
         def validate_native_app_security_leak
-          not_allowed = NATIVE_APP_NOT_ALLOWED & @params.keys
-          unless not_allowed.empty?
-            @error = INVALID_REQUEST
-            @error_description = "#{not_allowed.map(&:to_sym)} must not be provided for native app"
+          if relying_party.native_app?
+            not_allowed = NATIVE_APP_NOT_ALLOWED & @params.keys
+            unless not_allowed.empty?
+              @error = INVALID_REQUEST
+              @error_description = "#{not_allowed.map(&:to_sym)} must not be provided for native app"
+            end
           end
         end
 
