@@ -1,4 +1,4 @@
-module Songkick
+module FlickAuth
   module OAuth2
     module Model
 

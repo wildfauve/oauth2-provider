@@ -11,7 +11,7 @@ begin
 rescue LoadError
 end
 
-module Songkick
+module FlickAuth
   module OAuth2
     ROOT = File.expand_path(File.dirname(__FILE__) + '/..')
     TOKEN_SIZE = 160

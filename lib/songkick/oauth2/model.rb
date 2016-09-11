@@ -1,6 +1,6 @@
 require 'active_record'
 
-module Songkick
+module FlickAuth
   module OAuth2
     module Model
       autoload :Helpers,       ROOT + '/oauth2/model/helpers'
