@@ -1,4 +1,4 @@
-class SongkickOauth2SchemaOriginalSchema < ActiveRecord::Migration
+class Oauth2SchemaOriginalSchema < ActiveRecord::Migration
   def self.up
     create_table :oauth2_clients do |t|
       t.timestamps
@@ -33,4 +33,3 @@ class SongkickOauth2SchemaOriginalSchema < ActiveRecord::Migration
     drop_table :oauth2_authorizations
   end
 end
-

@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe Songkick::OAuth2::Provider::AccessToken do
+describe OAuth2::Provider::AccessToken do
   before do
     @alice = TestApp::User['Alice']
     @bob   = TestApp::User['Bob']
@@ -17,11 +17,11 @@ describe Songkick::OAuth2::Provider::AccessToken do
       :scope        => 'profile',
       :access_token => 'magic-key')
 
-    Songkick::OAuth2::Provider.realm = 'Demo App'
+    OAuth2::Provider.realm = 'Demo App'
   end
 
   let :token do
-    Songkick::OAuth2::Provider::AccessToken.new(@bob, ['profile'], 'magic-key')
+    OAuth2::Provider::AccessToken.new(@bob, ['profile'], 'magic-key')
   end
 
   shared_examples_for "valid token" do
@@ -54,14 +54,14 @@ describe Songkick::OAuth2::Provider::AccessToken do
 
   describe "with an implicit user" do
     let :token do
-      Songkick::OAuth2::Provider::AccessToken.new(:implicit, ['profile'], 'magic-key')
+      OAuth2::Provider::AccessToken.new(:implicit, ['profile'], 'magic-key')
     end
     it_should_behave_like "valid token"
   end
 
   describe "with no user" do
     let :token do
-      Songkick::OAuth2::Provider::AccessToken.new(nil, ['profile'], 'magic-key')
+      OAuth2::Provider::AccessToken.new(nil, ['profile'], 'magic-key')
     end
     it_should_behave_like "invalid token"
 
@@ -73,7 +73,7 @@ describe Songkick::OAuth2::Provider::AccessToken do
 
   describe "with less scope than was granted" do
     let :token do
-      Songkick::OAuth2::Provider::AccessToken.new(@bob, [], 'magic-key')
+      OAuth2::Provider::AccessToken.new(@bob, [], 'magic-key')
     end
     it_should_behave_like "valid token"
   end
@@ -90,7 +90,7 @@ describe Songkick::OAuth2::Provider::AccessToken do
 
   describe "with a non-existent token" do
     let :token do
-      Songkick::OAuth2::Provider::AccessToken.new(@bob, ['profile'], 'is-the-password-books')
+      OAuth2::Provider::AccessToken.new(@bob, ['profile'], 'is-the-password-books')
     end
     it_should_behave_like "invalid token"
 
@@ -102,7 +102,7 @@ describe Songkick::OAuth2::Provider::AccessToken do
 
   describe "with a token for the wrong user" do
     let :token do
-      Songkick::OAuth2::Provider::AccessToken.new(@bob, ['profile'], 'sesame')
+      OAuth2::Provider::AccessToken.new(@bob, ['profile'], 'sesame')
     end
     it_should_behave_like "invalid token"
 
@@ -114,7 +114,7 @@ describe Songkick::OAuth2::Provider::AccessToken do
 
   describe "with a token for an ungranted scope" do
     let :token do
-      Songkick::OAuth2::Provider::AccessToken.new(@bob, ['offline_access'], 'magic-key')
+      OAuth2::Provider::AccessToken.new(@bob, ['offline_access'], 'magic-key')
     end
     it_should_behave_like "invalid token"
 
@@ -126,7 +126,7 @@ describe Songkick::OAuth2::Provider::AccessToken do
 
   describe "with no token string" do
     let :token do
-      Songkick::OAuth2::Provider::AccessToken.new(@bob, ['profile'], nil)
+      OAuth2::Provider::AccessToken.new(@bob, ['profile'], nil)
     end
     it_should_behave_like "invalid token"
 

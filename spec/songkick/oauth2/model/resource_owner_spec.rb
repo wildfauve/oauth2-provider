@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe Songkick::OAuth2::Model::ResourceOwner do
+describe OAuth2::Model::ResourceOwner do
   before do
     @owner  = Factory(:owner)
     @client = Factory(:client)
@@ -12,26 +12,26 @@ describe Songkick::OAuth2::Model::ResourceOwner do
     end
 
     it "creates an authorization between the owner and the client" do
-      authorization = Songkick::OAuth2::Model::Authorization.__send__(:new)
-      Songkick::OAuth2::Model::Authorization.should_receive(:new).and_return(authorization)
+      authorization = OAuth2::Model::Authorization.__send__(:new)
+      OAuth2::Model::Authorization.should_receive(:new).and_return(authorization)
       @owner.grant_access!(@client)
     end
 
     # This is hacky, but doubleing ActiveRecord turns out to get messy
     it "creates an Authorization" do
-      Songkick::OAuth2::Model::Authorization.count.should == 0
+      OAuth2::Model::Authorization.count.should == 0
       @owner.grant_access!(@client)
-      Songkick::OAuth2::Model::Authorization.count.should == 1
+      OAuth2::Model::Authorization.count.should == 1
     end
 
     it "creates an Authorization" do
-      Songkick::OAuth2::Model::Authorization.count.should == 0
+      OAuth2::Model::Authorization.count.should == 0
       @owner.grant_access!(@client)
-      Songkick::OAuth2::Model::Authorization.count.should == 1
+      OAuth2::Model::Authorization.count.should == 1
     end
 
     it "returns the authorization" do
-      @owner.grant_access!(@client).should be_kind_of(Songkick::OAuth2::Model::Authorization)
+      @owner.grant_access!(@client).should be_kind_of(OAuth2::Model::Authorization)
     end
 
     # This method must return the same owner object, since the assertion
@@ -55,7 +55,7 @@ describe Songkick::OAuth2::Model::ResourceOwner do
     end
 
     it "does not create a new one" do
-      Songkick::OAuth2::Model::Authorization.should_not_receive(:new)
+      OAuth2::Model::Authorization.should_not_receive(:new)
       @owner.grant_access!(@client)
     end
 
@@ -86,9 +86,9 @@ describe Songkick::OAuth2::Model::ResourceOwner do
   end
 
   it "destroys its authorizations on destroy" do
-    Songkick::OAuth2::Model::Authorization.for(@owner, @client)
+    OAuth2::Model::Authorization.for(@owner, @client)
     @owner.destroy
-    Songkick::OAuth2::Model::Authorization.count.should be_zero
+    OAuth2::Model::Authorization.count.should be_zero
   end
 end
 

@@ -1,28 +1,26 @@
-module FlickAuth
-  module OAuth2
-    module Model
+module OAuth2
+  module Model
 
-      module Hashing
-        def hashes_attributes(*attributes)
-          attributes.each do |attribute|
-            define_method("#{attribute}=") do |value|
-              instance_variable_set("@#{attribute}", value)
-              __send__("#{attribute}_hash=", value && Lib::SecureCodeScheme.new.hashify(value))
-            end
-            attr_reader attribute
+    module Hashing
+      def hashes_attributes(*attributes)
+        attributes.each do |attribute|
+          define_method("#{attribute}=") do |value|
+            instance_variable_set("@#{attribute}", value)
+            __send__("#{attribute}_hash=", value && Lib::SecureCodeScheme.new.hashify(value))
           end
-
-          class_eval <<-RUBY
-            def reload(*args)
-              super
-              #{ attributes.inspect }.each do |attribute|
-                instance_variable_set('@' + attribute.to_s, nil)
-              end
-            end
-          RUBY
+          attr_reader attribute
         end
-      end
 
+        class_eval <<-RUBY
+          def reload(*args)
+            super
+            #{ attributes.inspect }.each do |attribute|
+              instance_variable_set('@' + attribute.to_s, nil)
+            end
+          end
+        RUBY
+      end
     end
+
   end
 end

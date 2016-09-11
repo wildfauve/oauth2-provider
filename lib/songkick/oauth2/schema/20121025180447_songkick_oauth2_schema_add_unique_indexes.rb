@@ -1,4 +1,4 @@
-class SongkickOauth2SchemaAddUniqueIndexes < ActiveRecord::Migration
+class Oauth2SchemaAddUniqueIndexes < ActiveRecord::Migration
   FIELDS = [:code, :refresh_token_hash]
 
   def self.up
@@ -35,4 +35,3 @@ class SongkickOauth2SchemaAddUniqueIndexes < ActiveRecord::Migration
     remove_index :oauth2_clients, [:name]
   end
 end
-

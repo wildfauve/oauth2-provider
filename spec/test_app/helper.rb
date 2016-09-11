@@ -3,8 +3,8 @@ module TestApp
   class User < ActiveRecord::Base
     self.table_name = :users
 
-    include Songkick::OAuth2::Model::ResourceOwner
-    include Songkick::OAuth2::Model::ClientOwner
+    include OAuth2::Model::ResourceOwner
+    include OAuth2::Model::ClientOwner
 
     def self.[](name)
       if respond_to?(:find_or_create_by)

@@ -1,10 +1,10 @@
 spec = Gem::Specification.new do |s|
-  s.name              = 'songkick-oauth2-provider'
-  s.version           = '0.11.1'
+  s.name              = 'oauth2-provider'
+  s.version           = '0.11.2'
   s.summary           = 'Simple OAuth 2.0 provider toolkit'
-  s.author            = 'James Coglan'
-  s.email             = 'james@songkick.com'
-  s.homepage          = 'http://github.com/songkick/oauth2-provider'
+  s.author            = ''
+  s.email             = 'wild.fauve@gmail.com'
+  s.homepage          = 'http://github.com/wildfauve/oauth2-provider'
 
   s.extra_rdoc_files  = %w[README.rdoc]
   s.rdoc_options      = %w[--main README.rdoc]

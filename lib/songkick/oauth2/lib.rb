@@ -1,13 +1,9 @@
-module FlickAuth
+module OAuth2
 
-  module OAuth2
+  module Lib
 
-    module Lib
-
-      autoload :RequestValue,       ROOT + '/oauth2/lib/request_value'
-      autoload :SecureCodeScheme,   ROOT + '/oauth2/lib/secure_code_scheme'
-
-    end
+    autoload :RequestValue,       ROOT + '/oauth2/lib/request_value'
+    autoload :SecureCodeScheme,   ROOT + '/oauth2/lib/secure_code_scheme'
 
   end
 

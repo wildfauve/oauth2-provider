@@ -1,10 +1,10 @@
 require 'spec_helper'
 
-describe Songkick::OAuth2::Model::Client do
+describe OAuth2::Model::Client do
   before do
-    @client = Songkick::OAuth2::Model::Client.create(:name => 'App', :redirect_uri => 'http://example.com/cb')
+    @client = OAuth2::Model::Client.create(:name => 'App', :redirect_uri => 'http://example.com/cb')
     @owner  = Factory(:owner)
-    Songkick::OAuth2::Model::Authorization.for(@owner, @client)
+    OAuth2::Model::Authorization.for(@owner, @client)
   end
 
   it "is valid" do
@@ -51,7 +51,7 @@ describe Songkick::OAuth2::Model::Client do
 
   it "destroys its authorizations on destroy" do
     @client.destroy
-    Songkick::OAuth2::Model::Authorization.count.should be_zero
+    OAuth2::Model::Authorization.count.should be_zero
   end
 end
 

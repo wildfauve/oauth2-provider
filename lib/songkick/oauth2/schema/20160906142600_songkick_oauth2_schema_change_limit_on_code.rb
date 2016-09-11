@@ -1,4 +1,4 @@
-class SongkickOauth2SchemaChangeLimitOnCode < ActiveRecord::Migration
+class Oauth2SchemaChangeLimitOnCode < ActiveRecord::Migration
   def self.up
     change_column :oauth2_authorizations, :code, :string, :limit => 200
   end

@@ -1,4 +1,3 @@
-module FlickAuth
   module OAuth2
     class Provider
 
@@ -69,4 +68,3 @@ module FlickAuth
 
     end
   end
-end

@@ -1,51 +1,47 @@
-module FlickAuth
+module OAuth2
 
-  module OAuth2
+  class Provider
 
-    class Provider
+    class AuthHandler
 
-      class AuthHandler
-
-        def initialize(request_value)
-          @request_value = request_value
-          @handler = if params[GRANT_TYPE]
-            error ||= Provider::Error.new('must be a POST request') unless request.post?
-            Provider::Exchange.new(resource_owner, params, error)
-          else
-            Provider::Authorization.new(resource_owner, params, error)
-          end
+      def initialize(request_value)
+        @request_value = request_value
+        @handler = if params[GRANT_TYPE]
+          error ||= Provider::Error.new('must be a POST request') unless request.post?
+          Provider::Exchange.new(resource_owner, params, error)
+        else
+          Provider::Authorization.new(resource_owner, params, error)
         end
+      end
 
-        def call
-          @handler.()
-        end
+      def call
+        @handler.()
+      end
 
-        def configuration
-          @handler
-        end
+      def configuration
+        @handler
+      end
 
-        private
+      private
 
-        def params
-          @request_value.params
-        end
+      def params
+        @request_value.params
+      end
 
-        def error
-          @request_value.error
-        end
+      def error
+        @request_value.error
+      end
 
-        def resource_owner
-          @request_value.resource_owner
-        end
+      def resource_owner
+        @request_value.resource_owner
+      end
 
-        def request
-          @request_value.request
-        end
+      def request
+        @request_value.request
+      end
 
-      end  # class
+    end  # class
 
-    end  # provider
+  end  # provider
 
-  end  # oauth2
-
-end  # songkick
+end  # oauth2
