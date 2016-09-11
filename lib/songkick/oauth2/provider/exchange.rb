@@ -9,6 +9,8 @@ module Songkick
 
         NATIVE_APP_REQUIRED_PARAMS = [GRANT_TYPE, CODE_VERIFIER]
 
+        NATIVE_APP_NOT_ALLOWED = [CLIENT_ID, CLIENT_SECRET]
+
         VALID_GRANT_TYPES = [AUTHORIZATION_CODE, PASSWORD, ASSERTION, REFRESH_TOKEN, CLIENT_CREDENTIALS]
 
         REQUIRED_PASSWORD_PARAMS = [USERNAME, PASSWORD]
@@ -106,6 +108,7 @@ module Songkick
           [ :check_transport_error,
             :determine_relying_party_intent,
             :validate_required_params,
+            :validate_native_app_security_leak,
             :validate_client,
             :validate_grant_types,
             :validate_grant,
@@ -124,6 +127,16 @@ module Songkick
           end
         end
 
+
+        def determine_relying_party_intent
+          if access_by_code
+            unless relying_party
+              @error = INVALID_CLIENT
+              @error_description = "Client can not be found for code #{@params[CODE]}"
+            end
+          end
+        end
+
         def validate_grant_types
           unless VALID_GRANT_TYPES.include?(@grant_type)
             @error = UNSUPPORTED_GRANT_TYPE
@@ -133,16 +146,6 @@ module Songkick
 
         def validate_grant
           __send__("validate_#{@grant_type}")
-        end
-
-
-        def determine_relying_party_intent
-          if access_by_code
-            unless relying_party
-              @error = INVALID_CLIENT
-              @error_description = "Client can not be found for code #{@params[CODE]}"
-            end
-          end
         end
 
         def access_by_code
@@ -156,6 +159,14 @@ module Songkick
             next if @params.has_key?(param)
             @error = INVALID_REQUEST
             @error_description = "Missing required parameter #{param}"
+          end
+        end
+
+        def validate_native_app_security_leak
+          not_allowed = NATIVE_APP_NOT_ALLOWED & @params.keys
+          unless not_allowed.empty?
+            @error = INVALID_REQUEST
+            @error_description = "#{not_allowed.map(&:to_sym)} must not be provided for native app"
           end
         end
 
