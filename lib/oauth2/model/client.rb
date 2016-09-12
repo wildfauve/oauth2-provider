@@ -38,7 +38,7 @@ module OAuth2
       end
 
       def native_app?
-        client_type == "native_app"
+        client_type == NATIVE_APP
       end
 
     private
