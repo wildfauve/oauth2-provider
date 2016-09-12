@@ -74,7 +74,8 @@ describe OAuth2::Provider::Authorization do
     before { params.delete('client_id') }
 
     it "is invalid" do
-      authorization.error.should == "invalid_request"
+      expect { authorization}.to raise.error == "invalid_request"
+      # authorization.error.should == "invalid_request"
       authorization.error_description.should == "Missing required parameter client_id"
     end
 
@@ -354,4 +355,3 @@ describe OAuth2::Provider::Authorization do
     end
   end
 end
-

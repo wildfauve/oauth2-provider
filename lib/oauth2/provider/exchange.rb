@@ -113,6 +113,7 @@ module OAuth2
           :validate_grant,
           :validate_scope
         ].each do |validation|
+          puts "====>#{validation}"
           __send__(validation)
           break if @error
         end
@@ -172,6 +173,7 @@ module OAuth2
       end
 
       def validate_client
+        binding.pry
         unless relying_party
           @error = INVALID_CLIENT
           @error_description = "Unknown client ID #{@params[CLIENT_ID]}"

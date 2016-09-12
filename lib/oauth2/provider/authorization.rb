@@ -164,7 +164,8 @@ module OAuth2
         [ :check_transport_error,
           :check_relying_party,
           :check_params,
-          :check_code_challenge,
+          :check_native_code_challenge,
+          :check_native_code_challenge_method,
           :check_for_new_lines,
           :check_response_types,
           :check_redirect_uri].each do |validation|
@@ -195,9 +196,19 @@ module OAuth2
         end
       end
 
+      def check_native_code_challenge
+        # Check that where is a code challege
+        if relying_party.native_app?
+          if @params[CODE_CHALLENGE].nil?
+            @error = INVALID_REQUEST
+            @error_description = "Code code_challenge must be provided"
+          end
+        end
+      end
 
-      def check_code_challenge
-        # Check that the code_challenge_method is "S256" when PKCE is enabled (for native_apps)
+
+      def check_native_code_challenge_method
+        # Check that where is a code_challenge_method is "S256" when PKCE is enabled (for native_apps)
         if relying_party.native_app?
           if @params[CODE_CHALLENGE_METHOD] != CODE_CHALLENGE_HASH_METHOD
             @error = INVALID_REQUEST

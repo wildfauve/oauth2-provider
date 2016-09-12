@@ -28,6 +28,9 @@ module OAuth2
   CLIENT_CREDENTIALS     = 'client_credentials'
   CLIENT_ID              = 'client_id'
   CLIENT_SECRET          = 'client_secret'
+  CLIENT_TYPE            = 'client_type'
+  NATIVE_APP             = 'native_app'
+  CLIENT_TYPES           = [NATIVE_APP]
   CODE                   = 'code'
   CODE_AND_TOKEN         = 'code_and_token'
   CODE_CHALLENGE         = 'code_challenge'
