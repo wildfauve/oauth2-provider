@@ -93,7 +93,6 @@ describe OAuth2::Provider do
           OAuth2::Model::Authorization.should_not_receive(:new)
           OAuth2::Lib::SecureCodeScheme.should_receive(:new).should_receive(:random_string).and_return('new_code')
           response = get(params)
-          puts "===> #{response.inspect}"
           response.code.to_i.should == 302
           response['location'].should == 'https://client.example.com/cb?code=new_code'
         end
