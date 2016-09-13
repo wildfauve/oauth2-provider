@@ -153,7 +153,7 @@ module OAuth2
 
       def validate_required_params
         # Native apps may not provide client_id/secret, so, dont check for them
-        checked_params = relying_party.native_app? ? NATIVE_APP_REQUIRED_PARAMS : REQUIRED_PARAMS
+        checked_params = relying_party.try(:native_app?) ? NATIVE_APP_REQUIRED_PARAMS : REQUIRED_PARAMS
         checked_params.each do |param|
           next if @params.has_key?(param)
           @error = INVALID_REQUEST
@@ -162,7 +162,7 @@ module OAuth2
       end
 
       def validate_native_app_security_leak
-        if relying_party.native_app?
+        if relying_party.try(:native_app?)
           not_allowed = NATIVE_APP_NOT_ALLOWED & @params.keys
           unless not_allowed.empty?
             @error = INVALID_REQUEST
@@ -263,7 +263,7 @@ module OAuth2
       end
 
       def validate_refresh_token
-        refresh_token_hash = Lib::SecureCodeScheme.new.hashify(@params[REFRESH_TOKEN])
+        refresh_token_hash = Lib::SecureCodeScheme.hashify(@params[REFRESH_TOKEN])
         @authorization = relying_party.authorizations.find_by_refresh_token_hash(refresh_token_hash)
         validate_authorization
       end
@@ -283,7 +283,7 @@ module OAuth2
         # we need to validate using the code_verifier
         if relying_party.native_app?
 
-          secure_scheme = Lib::SecureCodeScheme.new
+          secure_scheme = Lib::SecureCodeScheme
 
           code, method = secure_scheme.pkce_decode_code_and_method(@params[CODE])
 

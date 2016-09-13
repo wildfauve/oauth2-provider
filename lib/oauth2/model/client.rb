@@ -19,7 +19,7 @@ module OAuth2
       before_create :generate_credentials
 
       def self.create_client_id
-        Lib::SecureCodeScheme.new.generate(predicate: ->(client_id) {
+        Lib::SecureCodeScheme.generate(predicate: ->(client_id) {
           Helpers.count(self, :client_id => client_id).zero?
         })
       end
@@ -52,7 +52,7 @@ module OAuth2
 
       def generate_credentials
         self.client_id = self.class.create_client_id
-        self.client_secret = OAuth2::Lib::SecureCodeScheme.new.random_string
+        self.client_secret = OAuth2::Lib::SecureCodeScheme.random_string
       end
     end
 

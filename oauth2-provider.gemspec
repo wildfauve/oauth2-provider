@@ -26,4 +26,5 @@ spec = Gem::Specification.new do |s|
   s.add_development_dependency 'sinatra', '>= 1.3.0'
   s.add_development_dependency 'thin'
   s.add_development_dependency 'factory_girl', '~> 2.0'
+  s.add_development_dependency 'pry'
 end

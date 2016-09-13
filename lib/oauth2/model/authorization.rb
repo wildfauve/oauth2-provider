@@ -26,7 +26,7 @@ module OAuth2
       hashes_attributes :access_token, :refresh_token
 
       def self.create_code(client: , additional_attributes: {}, predicate: nil)
-        Lib::SecureCodeScheme.new.generate( attributes: code_gen_attributes(additional_attributes),
+        Lib::SecureCodeScheme.generate( attributes: code_gen_attributes(additional_attributes),
                                             predicate: predicate)
       end
 
@@ -41,16 +41,16 @@ module OAuth2
       end
 
       def self.create_access_token
-        Lib::SecureCodeScheme.new.generate(predicate: ->(token) {
-          hash = Lib::SecureCodeScheme.new.hashify(token)
+        Lib::SecureCodeScheme.generate(predicate: ->(token) {
+          hash = Lib::SecureCodeScheme.hashify(token)
           Helpers.count(self, :access_token_hash => hash).zero?
         })
       end
 
       def self.create_refresh_token(client)
         # OAuth2.generate_id do |refresh_token|
-        Lib::SecureCodeScheme.new.generate(predicate: ->(refresh_token) {
-          hash = Lib::SecureCodeScheme.new.hashify(refresh_token)
+        Lib::SecureCodeScheme.generate(predicate: ->(refresh_token) {
+          hash = Lib::SecureCodeScheme.hashify(refresh_token)
           Helpers.count(client.authorizations, :refresh_token_hash => hash).zero?
         })
       end

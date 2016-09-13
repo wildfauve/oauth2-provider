@@ -67,7 +67,7 @@ module OAuth2
   EXPIRED_TOKEN          = 'expired_token'
   INSUFFICIENT_SCOPE     = 'insufficient_scope'
   ACCESS_DENIED          = 'access_denied'
-  # SecureCode             = Lib::SecureCodeScheme.new
+  # SecureCode             = Lib::SecureCodeScheme
 
   class Provider
     EXPIRY_TIME = 3600

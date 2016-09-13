@@ -32,7 +32,7 @@ module OAuth2
 
     def self.find_access_token(access_token)
       return nil if access_token.nil?
-      Authorization.find_by_access_token_hash(Lib::SecureCodeScheme.new.hashify(access_token))
+      Authorization.find_by_access_token_hash(Lib::SecureCodeScheme.hashify(access_token))
     end
   end
 end

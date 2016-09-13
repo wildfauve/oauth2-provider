@@ -26,7 +26,7 @@ describe OAuth2::Provider do
 
       it "displays an authorization page" do
         response = get(params)
-        response.code.to_i.should == 200
+        expect(response.code.to_i).to eq(200)
         response.body.should =~ /Do you want to allow Test client/
         response['Content-Type'].should =~ /text\/html/
       end
@@ -110,7 +110,7 @@ describe OAuth2::Provider do
           :owner  => @owner,
           :client => @client,
           :code   => nil,
-          :access_token => Lib::SecureCodeScheme.new.hashify('complete_token'))
+          :access_token => Lib::SecureCodeScheme.hashify('complete_token'))
       end
 
       it "immediately redirects with a new code" do
@@ -452,7 +452,7 @@ describe OAuth2::Provider do
           post(params)
           @authorization.reload
           @authorization.code.should be_nil
-          @authorization.access_token_hash.should == Lib::SecureCodeScheme.new.hashify('random_access_token')
+          @authorization.access_token_hash.should == Lib::SecureCodeScheme.hashify('random_access_token')
         end
       end
     end
@@ -501,7 +501,7 @@ describe OAuth2::Provider do
         before { OAuth2::Provider.enforce_ssl = true }
 
         let(:authorization) do
-          OAuth2::Model::Authorization.find_by_access_token_hash(Lib::SecureCodeScheme.new.hashify('magic-key'))
+          OAuth2::Model::Authorization.find_by_access_token_hash(Lib::SecureCodeScheme.hashify('magic-key'))
         end
 
         it "blocks access when not using HTTPS" do
@@ -512,17 +512,17 @@ describe OAuth2::Provider do
         end
 
         it "destroys the access token since it's been leaked" do
-          authorization.access_token_hash.should == Lib::SecureCodeScheme.new.hashify('magic-key')
+          authorization.access_token_hash.should == Lib::SecureCodeScheme.hashify('magic-key')
           request('/user_profile', 'oauth_token' => 'magic-key')
           authorization.reload
           authorization.access_token_hash.should be_nil
         end
 
         it "keeps the access token if the wrong key is passed" do
-          authorization.access_token_hash.should == Lib::SecureCodeScheme.new.hashify('magic-key')
+          authorization.access_token_hash.should == Lib::SecureCodeScheme.hashify('magic-key')
           request('/user_profile', 'oauth_token' => 'is-the-password-books')
           authorization.reload
-          authorization.access_token_hash.should == Lib::SecureCodeScheme.new.hashify('magic-key')
+          authorization.access_token_hash.should == Lib::SecureCodeScheme.hashify('magic-key')
         end
       end
     end

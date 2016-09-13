@@ -162,8 +162,8 @@ module OAuth2
 
       def validate!
         [ :check_transport_error,
-          :check_relying_party,
           :check_params,
+          :check_relying_party,
           :check_native_code_challenge,
           :check_native_code_challenge_method,
           :check_for_new_lines,

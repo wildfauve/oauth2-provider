@@ -11,7 +11,7 @@ module TestApp
     set :views, File.dirname(__FILE__) + '/views'
 
     def handle_authorize
-      @oauth2 = OAuth2::Provider.parse(User['Bob'], env)
+      @oauth2 = OAuth2::Provider.parse(User['Bob'], env).()
       redirect(@oauth2.redirect_uri, @oauth2.response_status) if @oauth2.redirect?
 
       headers @oauth2.response_headers
@@ -65,4 +65,3 @@ module TestApp
 
   end
 end
-
