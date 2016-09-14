@@ -12,9 +12,6 @@
 
           authorize!(access_token, error)
 
-          
-          binding.pry
-
           validate!
         end
 

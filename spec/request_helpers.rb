@@ -31,9 +31,9 @@ module RequestHelpers
   end
 
   def validate_response(response, status, body)
-    response.code.to_i.should == status
-    response.body.should == body
-    response["Cache-Control"].should == "no-store"
+    expect(response.code.to_i).to eq(status)
+    expect(response.body).to eq(body)
+    expect(response["Cache-Control"]).to eq("no-store")
   end
 
   def validate_json_response(response, status, body)
@@ -59,4 +59,3 @@ module RequestHelpers
     mock_request
   end
 end
-

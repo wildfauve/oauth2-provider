@@ -90,7 +90,8 @@ module OAuth2
       end
 
       def redirect?
-        relying_party and (@authorized or not valid?)
+        relying_party and (@authorized or valid?)
+        # relying_party and (@authorized or not valid?)
       end
 
       def redirect_uri
@@ -147,11 +148,15 @@ module OAuth2
       end
 
       def relying_party
-        @client ||= @params[CLIENT_ID] && Model::Client.find_by_client_id(@params[CLIENT_ID])
+        unless @error
+          @client ||= @params[CLIENT_ID] && Model::Client.find_by_client_id(@params[CLIENT_ID])
+        end
       end
 
       def resource_owner_model
-        @model ||= @owner.oauth2_authorization_for(relying_party)
+        unless @error
+          @model ||= @owner.oauth2_authorization_for(relying_party)
+        end
       end
 
       def native_app_client?

@@ -242,7 +242,6 @@ describe OAuth2::Provider::Exchange do
   #       it_should_behave_like "valid token request"
   #
   #       it "sets the scope from the request" do
-  #         binding.pry
   #         exchange.update_authorization
   #         authorization.reload
   #         expect(authorization.scopes).to eq(Set.new(['lol']))

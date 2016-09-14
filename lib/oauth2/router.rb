@@ -24,7 +24,6 @@ module OAuth2
         if auth[CLIENT_ID] and auth[CLIENT_ID] != params[CLIENT_ID] and params[GRANT_TYPE] != CLIENT_CREDENTIALS
           error ||= Provider::Error.new("#{CLIENT_ID} from Basic Auth and request body do not match")
         end
-
         params = params.merge(auth)
 
         Provider::AuthHandler.new(build_value(params, resource_owner, error, request))

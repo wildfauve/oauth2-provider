@@ -8,9 +8,9 @@ module OAuth2
         @request_value = request_value
         @handler = if params[GRANT_TYPE]
           error ||= Provider::Error.new('must be a POST request') unless request.post?
-          Provider::Exchange.new(resource_owner, params, error)
+          Provider::Exchange.new(resource_owner, params, errors)
         else
-          Provider::Authorization.new(resource_owner, params, error)
+          Provider::Authorization.new(resource_owner, params, errors)
         end
       end
 
@@ -28,7 +28,7 @@ module OAuth2
         @request_value.params
       end
 
-      def error
+      def errors
         @request_value.error
       end
 

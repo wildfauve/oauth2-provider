@@ -87,7 +87,6 @@ module OAuth2
       end
 
       def self.generate_id_token(user)
-        binding.pry
         JSON::JWT.new(generate_id_token_hash(user)).sign(rsa_key(ENV[PRIVATE_KEY]), JWT_ALG).to_s
       end
 
@@ -123,7 +122,7 @@ module OAuth2
         # number representing the number of seconds from 1970-01-01T0:0:0Z as
         # measured in UTC until the date/time. See RFC 3339 [RFC3339] for details
         # regarding date/times in general and UTC in particular.
-        exp: Provider::DEFAULT_DURATION.from_now.utc.to_i,
+        exp: Provider.default_duration.from_now.utc.to_i,
         # OPTIONAL. Authentication Methods References. JSON array of strings that
         # are identifiers for authentication methods used in the authentication.
         # For instance, values might indicate that both password and OTP

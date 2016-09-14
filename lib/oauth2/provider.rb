@@ -42,7 +42,7 @@ module OAuth2
   ERROR_DESCRIPTION      = 'error_description'
   EXPIRES_IN             = 'expires_in'
   GRANT_TYPE             = 'grant_type'
-  ID_TOKEN               = 'id_token'    
+  ID_TOKEN               = 'id_token'
   JWT                    = :jwt
   JWT_ALG                = :RS256  #RSASSA-PKCS1-v1_5 using SHA-256
   LOGIN_HINT             = 'login_hint'
@@ -75,7 +75,6 @@ module OAuth2
 
   class Provider
     EXPIRY_TIME = 3600
-    DEFAULT_DURATION = 2.months
 
     autoload :Authorization, ROOT + '/oauth2/provider/authorization'
     autoload :Exchange,      ROOT + '/oauth2/provider/exchange'
@@ -84,7 +83,7 @@ module OAuth2
     autoload :AuthHandler,   ROOT + '/oauth2/provider/auth_handler'
 
     class << self
-      attr_accessor :realm, :enforce_ssl
+      attr_accessor :realm, :enforce_ssl, :default_duration
     end
 
     def self.clear_assertion_handlers!
