@@ -36,6 +36,15 @@ module OAuth2
         self
       end
 
+      # This service generates both access tokens and OpenId Connect JWTs.
+      # This would replace the ID Service JWT token generation (and the Oauth::Token model)
+      # It is not integrated into ID as yet
+      def generate_id_token
+        return if not valid? or @already_updated
+        @authorization.exchange_for_token!(token_type: JWT)
+        @already_updated = true
+      end
+
       def redirect?
         false
       end
@@ -46,6 +55,7 @@ module OAuth2
 
         response = {}
         [ACCESS_TOKEN, REFRESH_TOKEN, SCOPE].each do |key|
+        #[ACCESS_TOKEN, REFRESH_TOKEN, SCOPE, ID_TOKEN].each do |key|
           value = @authorization.__send__(key)
           response[key] = value if value
         end

@@ -30,6 +30,7 @@ module OAuth2
       DUPLICATE_RECORD_ERRORS.any? { |re| re =~ error.message }
     end
 
+    # This will only return an authorisation for non-JWT tokens
     def self.find_access_token(access_token)
       return nil if access_token.nil?
       Authorization.find_by_access_token_hash(Lib::SecureCodeScheme.hashify(access_token))

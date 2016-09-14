@@ -11,6 +11,10 @@
           @error          = error && INVALID_REQUEST
 
           authorize!(access_token, error)
+
+          
+          binding.pry
+
           validate!
         end
 

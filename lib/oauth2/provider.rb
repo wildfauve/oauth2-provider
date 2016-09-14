@@ -42,11 +42,15 @@ module OAuth2
   ERROR_DESCRIPTION      = 'error_description'
   EXPIRES_IN             = 'expires_in'
   GRANT_TYPE             = 'grant_type'
+  ID_TOKEN               = 'id_token'    
+  JWT                    = :jwt
+  JWT_ALG                = :RS256  #RSASSA-PKCS1-v1_5 using SHA-256
   LOGIN_HINT             = 'login_hint'
   OAUTH_TOKEN            = 'oauth_token'
   OPAQUE                 = 'opaque'
   PASSWORD               = 'password'
   PKCE                   = 'pkce'
+  PRIVATE_KEY            = 'IDENTITY_JWT_PRIVATE_KEY'
   REDIRECT_URI           = 'redirect_uri'
   REFRESH_TOKEN          = 'refresh_token'
   RESPONSE_TYPE          = 'response_type'
@@ -71,6 +75,7 @@ module OAuth2
 
   class Provider
     EXPIRY_TIME = 3600
+    DEFAULT_DURATION = 2.months
 
     autoload :Authorization, ROOT + '/oauth2/provider/authorization'
     autoload :Exchange,      ROOT + '/oauth2/provider/exchange'
