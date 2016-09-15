@@ -200,11 +200,12 @@ module OAuth2
       end
 
       def check_params
-        checked_params.each do |param|
-          next if @params.has_key?(param)
+        missing_params = checked_params - @params.keys
+        if missing_params.present?
           @error = INVALID_REQUEST
-          @error_description = "Missing required parameter #{param}"
+          @error_description = "Missing required parameter(s) #{missing_params.map(&:to_sym)}"
         end
+
       end
 
       def check_native_code_challenge

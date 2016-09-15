@@ -184,7 +184,7 @@ describe OAuth2::Provider do
       it "redirects to the client's registered redirect_uri" do
         response = get(params)
         expect(response.code.to_i).to eq(302)
-        expect(response['location']).to eq('https://client.example.com/cb?error=invalid_request&error_description=Missing+required+parameter+response_type')
+        expect(response['location']).to eq('https://client.example.com/cb?error=invalid_request&error_description=Missing+required+parameter%28s%29+%5B%3Aresponse_type%5D')
       end
     end
 
@@ -194,7 +194,7 @@ describe OAuth2::Provider do
       it "redirects to the client's redirect_uri on error" do
         response = get(params)
         expect(response.code.to_i).to eq(302)
-        expect(response['location']).to eq('https://client.example.com/cb?error=invalid_request&error_description=Missing+required+parameter+response_type')
+        expect(response['location']).to eq('https://client.example.com/cb?error=invalid_request&error_description=Missing+required+parameter%28s%29+%5B%3Aresponse_type%5D')
       end
 
       describe "with a state parameter" do
@@ -203,7 +203,7 @@ describe OAuth2::Provider do
         it "redirects to the client, including the state param" do
           response = get(params)
           expect(response.code.to_i).to eq(302)
-          expect(response['location']).to eq("https://client.example.com/cb?error=invalid_request&error_description=Missing+required+parameter+response_type&state=Facebook%0Amesses+this%0Aup")
+          expect(response['location']).to eq("https://client.example.com/cb?error=invalid_request&error_description=Missing+required+parameter%28s%29+%5B%3Aresponse_type%5D&state=Facebook%0Amesses+this%0Aup")
         end
       end
     end

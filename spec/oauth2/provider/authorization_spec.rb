@@ -52,7 +52,7 @@ describe OAuth2::Provider::Authorization do
 
     it "is invalid" do
       expect(authorization.error).to  eq("invalid_request")
-      expect(authorization.error_description).to  eq("Missing required parameter response_type")
+      expect(authorization.error_description).to  eq("Missing required parameter(s) [:response_type]")
     end
   end
 
@@ -75,7 +75,7 @@ describe OAuth2::Provider::Authorization do
 
     it "is invalid" do
       expect(authorization.error).to eq("invalid_request")
-      expect(authorization.error_description).to eq("Missing required parameter client_id")
+      expect(authorization.error_description).to eq("Missing required parameter(s) [:client_id]")
     end
 
     it "does not cause a redirect" do
@@ -101,12 +101,12 @@ describe OAuth2::Provider::Authorization do
 
     it "is invalid" do
       expect(authorization.error).to eq("invalid_request")
-      expect(authorization.error_description).to eq("Missing required parameter redirect_uri")
+      expect(authorization.error_description).to eq("Missing required parameter(s) [:redirect_uri]")
     end
 
     it "causes a redirect to the client's registered redirect_uri" do
       expect(authorization).to be_redirect
-      expect(authorization.redirect_uri).to eq("https://client.example.com/cb?error=invalid_request&error_description=Missing+required+parameter+redirect_uri")
+      expect(authorization.redirect_uri).to eq("https://client.example.com/cb?error=invalid_request&error_description=Missing+required+parameter%28s%29+%5B%3Aredirect_uri%5D")
     end
   end
 

@@ -49,6 +49,14 @@ require 'thin'
 Thin::Logging.silent = true
 $VERBOSE = nil
 
+module URI
+  class FLICKAPP < Generic
+    DEFAULT_PORT = 10000
+  end
+  @@schemes['FLICKAPP'] = FLICKAPP
+end
+
+
 RSpec.configure do |config|
   # to run only specific specs, add :focus to the spec
   #   describe "foo", :focus do
