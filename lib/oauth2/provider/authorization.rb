@@ -90,8 +90,8 @@ module OAuth2
       end
 
       def redirect?
-        relying_party and (@authorized or valid?)
         # relying_party and (@authorized or not valid?)
+        relying_party && (@authorized || !valid? || redirectable_error?)
       end
 
       def redirect_uri
@@ -148,13 +148,13 @@ module OAuth2
       end
 
       def relying_party
-        unless @error
+        unless @transport_error
           @client ||= @params[CLIENT_ID] && Model::Client.find_by_client_id(@params[CLIENT_ID])
         end
       end
 
       def resource_owner_model
-        unless @error
+        unless @transport_error
           @model ||= @owner.oauth2_authorization_for(relying_party)
         end
       end
@@ -163,7 +163,13 @@ module OAuth2
         relying_party.try(:native_app?)
       end
 
-    private
+      private
+
+      # transport errors will not result in a redirect.
+      # params-based errors will, however
+      def redirectable_error?
+        @error && !@transport_error
+      end
 
       def validate!
         [ :check_transport_error,

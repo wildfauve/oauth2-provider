@@ -72,6 +72,7 @@ module OAuth2
                      authorization.client = client
                    end
 
+
         case attributes[RESPONSE_TYPE]
           when CODE
             instance.code ||= create_code(client: client, additional_attributes: attributes , predicate: nil)

@@ -5,12 +5,10 @@ module OAuth2
     class AuthHandler
 
       def initialize(request_value)
-        @request_value = request_value
-        @handler = if params[GRANT_TYPE]
-          error ||= Provider::Error.new('must be a POST request') unless request.post?
-          Provider::Exchange.new(resource_owner, params, errors)
+        @handler = if request_value.params[GRANT_TYPE]
+          Provider::Exchange.new(request_value.resource_owner, request_value.params, error_to_pass(request_value))
         else
-          Provider::Authorization.new(resource_owner, params, errors)
+          Provider::Authorization.new(request_value.resource_owner, request_value.params, request_value.error)
         end
       end
 
@@ -24,20 +22,9 @@ module OAuth2
 
       private
 
-      def params
-        @request_value.params
-      end
-
-      def errors
-        @request_value.error
-      end
-
-      def resource_owner
-        @request_value.resource_owner
-      end
-
-      def request
-        @request_value.request
+      def error_to_pass(request_value)
+        return request_value.error if request_value.error
+        Provider::Error.new('must be a POST request') unless request_value.request.post?
       end
 
     end  # class

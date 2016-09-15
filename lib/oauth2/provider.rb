@@ -131,13 +131,13 @@ module OAuth2
       Router.parse(*args)
     end
 
-    # def self.access_token(*args)
-    #   Router.access_token(*args)
-    # end
+    def self.access_token(*args)
+      Router.access_token(*args)
+    end
 
-    # def self.access_token_from_request(*args)
-    #   Router.access_token_from_request(*args)
-    # end
+    def self.access_token_from_request(*args)
+      Router.access_token_from_request(*args)
+    end
   end
 
 end

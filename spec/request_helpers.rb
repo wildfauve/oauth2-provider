@@ -37,10 +37,10 @@ module RequestHelpers
   end
 
   def validate_json_response(response, status, body)
-    response.code.to_i.should == status
-    JSON.parse(response.body).should == body
-    response["Content-Type"].should == "application/json"
-    response["Cache-Control"].should == "no-store"
+    expect(response.code.to_i).to eq(status)
+    expect(JSON.parse(response.body)).to eq(body)
+    expect(response["Content-Type"]).to eq("application/json")
+    expect(response["Cache-Control"]).to eq("no-store")
   end
 
   def mock_request(request_class, stubs = {})

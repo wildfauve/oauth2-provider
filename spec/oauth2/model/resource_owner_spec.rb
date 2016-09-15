@@ -44,8 +44,8 @@ describe OAuth2::Model::ResourceOwner do
     end
 
     it "sets the duration of the authorization" do
-      authorization = @owner.grant_access!(@client, :duration => 5.hours)
-      authorization.expires_at.to_i.should == (Time.now + 5.hours.to_i).to_i
+      authorization = @owner.grant_access!(@client, 'duration' => 5.hours)
+      expect(authorization.expires_at.to_i).to eq((Time.now + 5.hours.to_i).to_i)
     end
   end
 
@@ -60,9 +60,9 @@ describe OAuth2::Model::ResourceOwner do
     end
 
     it "updates the authorization with scopes" do
-      @owner.grant_access!(@client, :scopes => ['foo', 'bar'])
+      @owner.grant_access!(@client, 'scopes' => ['foo', 'bar'])
       @authorization.reload
-      @authorization.scopes.should == Set.new(['foo', 'bar'])
+      expect(@authorization.scopes).to eq(Set.new(['foo', 'bar']))
     end
 
     describe "with scopes" do
@@ -71,16 +71,16 @@ describe OAuth2::Model::ResourceOwner do
       end
 
       it "merges the new scopes with the existing ones" do
-        @owner.grant_access!(@client, :scopes => ['qux'])
+        @owner.grant_access!(@client, 'scopes' => ['qux'])
         @authorization.reload
-        @authorization.scopes.should == Set.new(['foo', 'bar', 'qux'])
+        expect(@authorization.scopes).to eq(Set.new(['foo', 'bar', 'qux']))
       end
 
       it "does not add duplicate scopes to the list" do
-        @owner.grant_access!(@client, :scopes => ['qux'])
-        @owner.grant_access!(@client, :scopes => ['qux'])
+        @owner.grant_access!(@client, 'scopes' => ['qux'])
+        @owner.grant_access!(@client, 'scopes' => ['qux'])
         @authorization.reload
-        @authorization.scopes.should == Set.new(['foo', 'bar', 'qux'])
+        expect(@authorization.scopes).to eq(Set.new(['foo', 'bar', 'qux']))
       end
     end
   end
@@ -91,4 +91,3 @@ describe OAuth2::Model::ResourceOwner do
     OAuth2::Model::Authorization.count.should be_zero
   end
 end
-

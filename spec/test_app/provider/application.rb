@@ -13,7 +13,6 @@ module TestApp
     def handle_authorize
       @oauth2 = OAuth2::Provider.parse(User['Bob'], env).()
       redirect(@oauth2.redirect_uri, @oauth2.response_status) if @oauth2.redirect?
-
       headers @oauth2.response_headers
       status  @oauth2.response_status
 
