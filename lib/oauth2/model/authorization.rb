@@ -1,4 +1,5 @@
 module OAuth2
+
   module Model
 
     class Authorization < ActiveRecord::Base
@@ -105,6 +106,14 @@ module OAuth2
         end
       end
 
+      def self.find_by_jwt(jwt)
+        begin
+          User.find(jwt[:sub])
+        rescue ActiveRecord::ActiveRecordError => e
+          nil
+        end
+      end
+
       def exchange!
         self.code          = nil
         self.access_token  = self.class.create_access_token
@@ -158,7 +167,9 @@ module OAuth2
         scopes = scope ? scope.split(/\s+/) : []
         Set.new(scopes)
       end
+
     end
 
-  end
-end
+  end # module
+
+end # module

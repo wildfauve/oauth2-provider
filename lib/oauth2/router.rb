@@ -51,8 +51,8 @@ module OAuth2
         header  = request.env['HTTP_AUTHORIZATION']
 
         header && header =~ /^(OAuth|Bearer)\s+/ ?
-            header.gsub(/^(OAuth|Bearer)\s+/, '') :
-            params[OAUTH_TOKEN]
+            [:jwt, header.gsub(/^(OAuth|Bearer)\s+/, '')] :
+            [:acess_token, params[OAUTH_TOKEN]]
       end
 
     private
