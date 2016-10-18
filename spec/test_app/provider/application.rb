@@ -1,5 +1,7 @@
 require 'sinatra'
 require File.expand_path('../../helper', __FILE__)
+require 'json/jwt'
+require 'jwt'
 
 module TestApp
   class Provider < Sinatra::Base
@@ -7,6 +9,9 @@ module TestApp
     extend Helper::RackRunner
 
     OAuth2::Provider.realm = 'Demo App'
+
+    # OAuth2::Provider.token_decoder = [JSON::JWT, :decode]
+    OAuth2::Provider.token_decoder = [JSON::JWT, :decode]
 
     set :views, File.dirname(__FILE__) + '/views'
 

@@ -50,9 +50,18 @@ module OAuth2
         params  = request.params
         header  = request.env['HTTP_AUTHORIZATION']
 
-        header && header =~ /^(OAuth|Bearer)\s+/ ?
-            [:jwt, header.gsub(/^(OAuth|Bearer)\s+/, '')] :
-            [:acess_token, params[OAUTH_TOKEN]]
+        if header && header =~ /^(OAuth|Bearer)\s+/
+          token = header.gsub(/^(OAuth|Bearer)\s+/, '')
+          begin
+            JWT.decode(token, nil, false)
+            [:jwt, token]
+          rescue JWT::DecodeError
+            # assume that this is an OAUTH_TOKEN
+            [:access_token, token]
+          end
+        else
+          nil
+        end
       end
 
     private

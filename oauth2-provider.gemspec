@@ -17,6 +17,8 @@ spec = Gem::Specification.new do |s|
   s.add_dependency 'json'
   s.add_dependency 'rack'
   s.add_dependency 'json-jwt'
+  s.add_dependency 'jwt'
+  s.add_dependency 'flick_auth'
 
   s.add_development_dependency 'appraisal', '~> 0.4.0'
   #s.add_development_dependency 'activerecord', '~> 3.2.0' # The SQLite adapter in 3.1 is broken

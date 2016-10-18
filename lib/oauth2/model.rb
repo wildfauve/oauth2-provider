@@ -36,12 +36,12 @@ module OAuth2
       return nil if token.nil?
       if token[0] == :jwt
         begin
-          Authorization.find_by_jwt(FlickAuth::Jwt.decode!(token[1]))
+          Authorization.find_by_jwt(Provider.token_decoder[0].send(Provider.token_decoder[1], token[1]))
         rescue JSON::JWT::Exception => e
           nil
         end
       else
-        Authorization.find_by_token_hash(Lib::SecureCodeScheme.hashify(access_token))
+        Authorization.find_by_access_token_hash(Lib::SecureCodeScheme.hashify(token[1]))
       end
     end
   end

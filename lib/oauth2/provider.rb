@@ -43,7 +43,6 @@ module OAuth2
   EXPIRES_IN             = 'expires_in'
   GRANT_TYPE             = 'grant_type'
   ID_TOKEN               = 'id_token'
-  JWT                    = :jwt
   JWT_ALG                = :RS256  #RSASSA-PKCS1-v1_5 using SHA-256
   LOGIN_HINT             = 'login_hint'
   OAUTH_TOKEN            = 'oauth_token'
@@ -83,7 +82,7 @@ module OAuth2
     autoload :AuthHandler,   ROOT + '/oauth2/provider/auth_handler'
 
     class << self
-      attr_accessor :realm, :enforce_ssl, :default_duration
+      attr_accessor :realm, :enforce_ssl, :default_duration, :token_decoder
     end
 
     def self.clear_assertion_handlers!
