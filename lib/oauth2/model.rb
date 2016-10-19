@@ -32,16 +32,17 @@ module OAuth2
     end
 
     # This will only return an authorisation for JWT and non-JWT tokens
-    def self.find_access_token(token)
-      return nil if token.nil?
-      if token[0] == :jwt
+    def self.find_access_token(token_tuple)
+      return nil if token_tuple.nil?
+      return nil if Provider.token_decoder.nil? || !Provider.token_decoder[0].respond_to?(Provider.token_decoder[1])
+      if token_tuple[0] == :jwt
         begin
-          Authorization.find_by_jwt(Provider.token_decoder[0].send(Provider.token_decoder[1], token[1]))
+          Authorization.find_by_jwt(Provider.token_decoder[0].send(Provider.token_decoder[1], token_tuple[1]))
         rescue JSON::JWT::Exception => e
           nil
         end
       else
-        Authorization.find_by_access_token_hash(Lib::SecureCodeScheme.hashify(token[1]))
+        Authorization.find_by_access_token_hash(Lib::SecureCodeScheme.hashify(token_tuple[1]))
       end
     end
   end

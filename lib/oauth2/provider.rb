@@ -82,7 +82,7 @@ module OAuth2
     autoload :AuthHandler,   ROOT + '/oauth2/provider/auth_handler'
 
     class << self
-      attr_accessor :realm, :enforce_ssl, :default_duration, :token_decoder
+      attr_accessor :realm, :enforce_ssl, :default_duration, :token_decoder, :issuer
     end
 
     def self.clear_assertion_handlers!

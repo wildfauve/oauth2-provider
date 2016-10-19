@@ -1,3 +1,5 @@
+require 'jwt'
+
 module OAuth2
   class Router
 
@@ -43,7 +45,7 @@ module OAuth2
                                   detect_transport_error(env))
       end
 
-      # Given a request that contains an access token (either a tokne provided by this gem or a JWT)
+      # Given a request that contains an access token (either a token provided by this gem or a JWT)
       # return just the token
       def access_token_from_request(env)
         request = request_from(env)
