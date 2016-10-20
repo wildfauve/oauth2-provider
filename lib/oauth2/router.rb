@@ -51,7 +51,6 @@ module OAuth2
         request = request_from(env)
         params  = request.params
         header  = request.env['HTTP_AUTHORIZATION']
-
         if header && header =~ /^(OAuth|Bearer)\s+/
           token = header.gsub(/^(OAuth|Bearer)\s+/, '')
           begin
@@ -61,6 +60,8 @@ module OAuth2
             # assume that this is an OAUTH_TOKEN
             [:access_token, token]
           end
+        elsif params["oauth_token"]
+          [:access_token, params["oauth_token"]]
         else
           nil
         end

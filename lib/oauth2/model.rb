@@ -42,7 +42,7 @@ module OAuth2
           nil
         end
       else
-        Authorization.find_by_access_token_hash(Lib::SecureCodeScheme.hashify(token_tuple[1]))
+        Authorization.find_by_access_token_hash(Lib::SecureCodeScheme.hashify(token_tuple[1])).try(:owner)
       end
     end
   end

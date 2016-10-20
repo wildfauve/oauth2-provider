@@ -107,8 +107,9 @@ module OAuth2
       end
 
       def self.find_by_jwt(jwt)
+        # TODO: move check of expiry to a better place
         begin
-          User.find(jwt[:sub])
+          Time.now.utc.to_i < jwt[:exp] ? User.find(jwt[:sub]) : nil
         rescue ActiveRecord::ActiveRecordError => e
           nil
         end
