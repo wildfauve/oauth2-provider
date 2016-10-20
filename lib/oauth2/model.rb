@@ -32,6 +32,7 @@ module OAuth2
     end
 
     # This will only return an authorisation for JWT and non-JWT tokens
+    # TODO: Refactor this to an access token service (probably exchange)
     def self.find_access_token(token_tuple)
       return nil if token_tuple.nil?
       return nil if Provider.token_decoder.nil? || !Provider.token_decoder[0].respond_to?(Provider.token_decoder[1])
