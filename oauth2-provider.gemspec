@@ -18,6 +18,7 @@ spec = Gem::Specification.new do |s|
   s.add_dependency 'bcrypt-ruby'
   s.add_dependency 'json'
   s.add_dependency 'rack'
+  s.add_dependency 'jwt'
   s.add_dependency 'json-jwt'
 
   s.add_development_dependency 'appraisal', '~> 0.4.0'

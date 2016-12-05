@@ -3,5 +3,6 @@
 source "http://rubygems.org"
 
 gem "activerecord", "~> 5.0"
+gem 'mysql', '~> 2.9.0' if ENV['DB'] == 'mysql'
 
 gemspec :path => "../"

@@ -9,7 +9,6 @@ matrix:
     - { rvm: 2.2.3, gemfile: gemfiles/activerecord_4_2.gemfile, env: DB=mysql     }
 
     # different ruby versions
-    - { rvm: 2.0.0, gemfile: gemfiles/activerecord_4_2.gemfile, env: DB=postgres  }
     - { rvm: 2.1.1, gemfile: gemfiles/activerecord_4_2.gemfile, env: DB=postgres  }
     - { rvm: 2.2.3, gemfile: gemfiles/activerecord_4_2.gemfile, env: DB=postgres  }
     - { rvm: 2.3,   gemfile: gemfiles/activerecord_4_2.gemfile, env: DB=postgres  }
