@@ -10,7 +10,6 @@ module TestApp
 
     OAuth2::Provider.realm = 'Demo App'
 
-    # OAuth2::Provider.token_decoder = [JSON::JWT, :decode]
     OAuth2::Provider.token_decoder = [JSON::JWT, :decode]
 
     set :views, File.dirname(__FILE__) + '/views'

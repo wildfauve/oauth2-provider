@@ -6,26 +6,21 @@ describe OAuth2::Provider do
   before(:all) { TestApp::Provider.start(RequestHelpers::SERVER_PORT) }
   after(:all)  { TestApp::Provider.stop }
 
-  let(:params) { { 'response_type' => 'code',
-                   'client_id'     => @client.client_id,
-                   'redirect_uri'  => @client.redirect_uri }
-               }
+  let(:client) { Factory(:client, :name => 'Test client') }
+  let(:owner)  { TestApp::User['Bob'] }
 
-  before do
-    @client = Factory(:client, :name => 'Test client')
-    @owner  = TestApp::User['Bob']
-  end
+  let(:params) { { 'response_type' => 'code',
+                   'client_id'     => client.client_id,
+                   'redirect_uri'  => client.redirect_uri }
+               }
 
   describe "access grant request" do
     shared_examples_for "asks for user permission" do
       it "creates an authorization" do
-        # TODO: solve this mocking
-        # auth = instance_double(OAuth2::Provider::Authorization, :client => @client, :params => {}, :scopes => [], :valid? => true)
-        # # OAuth2::Provider::Authorization.should_receive(:new).with(@owner, params, nil).and_return(auth)
-        # # expect(OAuth2::Provider::Authorization).to receive(:new).with(@owner, params, nil).and_return(auth)
-        # # expect(OAuth2::Provider::Authorization).to receive(:call)
-        # expect(auth).to receive(:call)
-        # get(params)
+        auth = instance_double(OAuth2::Provider::Authorization, :client => client, :params => {}, :scopes => [], :response_headers => {}, :response_status => 200, :response_body => nil, :redirect? => false, :valid? => true)
+        expect(OAuth2::Provider::Authorization).to receive(:new).with(owner, params, nil).and_return(auth)
+        expect(auth).to receive(:call).and_return(auth)
+        get(params)
       end
 
       it "displays an authorization page" do
@@ -64,8 +59,8 @@ describe OAuth2::Provider do
     describe "when there is already a pending authorization from the user" do
       before do
         @authorization = create_authorization(
-          :owner  => @owner,
-          :client => @client,
+          :owner  => owner,
+          :client => client,
           :code   => 'pending_code',
           :scope  => 'offline_access')
       end
@@ -113,8 +108,8 @@ describe OAuth2::Provider do
     describe "when there is already a completed authorization from the user" do
       before do
         @authorization = create_authorization(
-          :owner  => @owner,
-          :client => @client,
+          :owner  => owner,
+          :client => client,
           :code   => nil,
           :access_token => OAuth2::Lib::SecureCodeScheme.hashify('complete_token'))
       end
@@ -179,7 +174,7 @@ describe OAuth2::Provider do
 
     describe "with a client_id and a bad redirect_uri" do
       let(:params) { {'redirect_uri' => 'http://evilsite.com/callback',
-                      'client_id'    => @client.client_id} }
+                      'client_id'    => client.client_id} }
 
       it "redirects to the client's registered redirect_uri" do
         response = get(params)
@@ -326,24 +321,25 @@ describe OAuth2::Provider do
   end
 
   describe "access token request" do
+    let(:client) { Factory(:client) }
     before do
-      @client = Factory(:client)
       @authorization = create_authorization(
-          :owner      => @owner,
-          :client     => @client,
+          :owner      => owner,
+          :client     => client,
           :code       => 'a_fake_code',
           :expires_at => 3.hours.from_now)
     end
 
-    let(:auth_params)  { { 'client_id'     => @client.client_id,
-                           'client_secret' => @client.client_secret }
+    let(:auth_params)  { { 'client_id'     => client.client_id,
+                           'client_secret' => client.client_secret,
+                           'response_type' => 'token' }
                        }
 
     describe "using authorization_code request" do
-      let(:query_params) { { 'client_id'    => @client.client_id,
+      let(:query_params) { { 'client_id'    => client.client_id,
                              'grant_type'   => 'authorization_code',
                              'code'         => @authorization.code,
-                             'redirect_uri' => @client.redirect_uri }
+                             'redirect_uri' => client.redirect_uri }
                          }
 
       let(:params) { auth_params.merge(query_params) }
@@ -381,21 +377,21 @@ describe OAuth2::Provider do
           end
         end
 
-        # it "creates a Token when using Basic Auth" do
-        #   # TODO: solve the chaining problem
-        #   token = instance_double(OAuth2::Provider::Exchange, :response_body => 'Hello')
-        #   # expect(OAuth2::Provider::Exchange).to receive(:new).with(@owner, params, nil).to receive(:call).and_return(token)
-        #   expect(OAuth2::Provider::Exchange).to receive_message_chain(:new, :call, :redirect?).and_return(token)
-        #   post_basic_auth(auth_params, query_params)
-        # end
+        xit "creates a Token when using Basic Auth" do
+          # TODO: solve the chaining problem
+          token = instance_double(OAuth2::Provider::Exchange, :response_body => 'Hello')
+          # expect(OAuth2::Provider::Exchange).to receive(:new).with(owner, params, nil).to receive(:call).and_return(token)
+          expect(OAuth2::Provider::Exchange).to receive_message_chain(:new, :call, :redirect?).and_return(token)
+          post_basic_auth(auth_params, query_params)
+        end
 
-        # it "creates a Token when passing params in the POST body" do
-        #   # TODO: solve the chaining problem
-        #   token = mock_request(OAuth2::Provider::Exchange, :response_body => 'Hello')
-        #   # OAuth2::Provider::Exchange.should_receive(:new).with(@owner, params, nil).and_return(token)
-        #   expect(OAuth2::Provider::Exchange).to receive(:new).with(@owner, params, nil)
-        #   post(params)
-        # end
+        xit "creates a Token when passing params in the POST body" do
+          # TODO: solve the chaining problem
+          token = mock_request(OAuth2::Provider::Exchange, :response_body => 'Hello')
+          # OAuth2::Provider::Exchange.should_receive(:new).with(owner, params, nil).and_return(token)
+          expect(OAuth2::Provider::Exchange).to receive(:new).with(owner, params, nil)
+          post(params)
+        end
 
         it "returns a successful response" do
           expect(OAuth2::Lib::SecureCodeScheme).to receive(:random_string).and_return('random_access_token')
@@ -468,11 +464,12 @@ describe OAuth2::Provider do
     end
   end
 
-  describe "protected resource request" do
+  # We dont use `access_tokens` at Flick.
+  xdescribe "protected resource request" do
     before do
       @authorization = create_authorization(
-        :owner        => @owner,
-        :client       => @client,
+        :owner        => owner,
+        :client       => client,
         :access_token => 'magic-key',
         :scope        => 'profile')
     end
@@ -483,7 +480,7 @@ describe OAuth2::Provider do
         expect(mock_token).to receive(:response_headers).and_return({})
         expect(mock_token).to receive(:response_status).and_return(200)
         expect(mock_token).to receive(:valid?).and_return(true)
-        expect(OAuth2::Provider::AccessToken).to receive(:new).with(TestApp::User['Bob'], ['profile'], 'magic-key', nil).and_return(mock_token)
+        expect(OAuth2::Provider::AccessToken).to receive(:new).with(TestApp::User['Bob'], ['profile'], [:access_token, 'magic-key'], nil).and_return(mock_token)
         request('/user_profile', 'oauth_token' => 'magic-key')
       end
 
@@ -507,80 +504,80 @@ describe OAuth2::Provider do
         expect(response['WWW-Authenticate']).to eq("OAuth realm='Demo App'")
       end
 
-      # describe "enforcing SSL" do
-      #   before { OAuth2::Provider.enforce_ssl = true }
-      #
-      #   let(:authorization) do
-      #     OAuth2::Model::Authorization.find_by_access_token_hash(OAuth2::Lib::SecureCodeScheme.hashify('magic-key'))
-      #   end
-      #
-      #   it "blocks access when not using HTTPS" do
-      #     response = request('/user_profile', 'oauth_token' => 'magic-key')
-      #     expect(JSON.parse(response.body)['data']).to eq('No soup for you')
-      #     expect(response.code.to_i).to eq(401)
-      #     expect(response['WWW-Authenticate']).to eq("OAuth realm='Demo App', error='invalid_request'")
-      #   end
-      #
-      #   it "destroys the access token since it's been leaked" do
-      #     expect(authorization.access_token_hash).to eq(OAuth2::Lib::SecureCodeScheme.hashify('magic-key'))
-      #     request('/user_profile', 'oauth_token' => 'magic-key')
-      #     authorization.reload
-      #     expect(authorization.access_token_hash).to be_nil
-      #   end
-      #
-      #   it "keeps the access token if the wrong key is passed" do
-      #     expect(authorization.access_token_hash).to eq(OAuth2::Lib::SecureCodeScheme.hashify('magic-key'))
-      #     request('/user_profile', 'oauth_token' => 'is-the-password-books')
-      #     authorization.reload
-      #     expect(authorization.access_token_hash).to eq(OAuth2::Lib::SecureCodeScheme.hashify('magic-key'))
-      #   end
-      #
-      # end #describe
+      describe "enforcing SSL" do
+        before { OAuth2::Provider.enforce_ssl = true }
+
+        let(:authorization) do
+          OAuth2::Model::Authorization.find_by_access_token_hash(OAuth2::Lib::SecureCodeScheme.hashify('magic-key'))
+        end
+
+        it "blocks access when not using HTTPS" do
+          response = request('/user_profile', 'oauth_token' => 'magic-key')
+          expect(JSON.parse(response.body)['data']).to eq('No soup for you')
+          expect(response.code.to_i).to eq(401)
+          expect(response['WWW-Authenticate']).to eq("OAuth realm='Demo App', error='invalid_request'")
+        end
+
+        it "destroys the access token since it's been leaked" do
+          expect(authorization.access_token_hash).to eq(OAuth2::Lib::SecureCodeScheme.hashify('magic-key'))
+          request('/user_profile', 'oauth_token' => 'magic-key')
+          authorization.reload
+          expect(authorization.access_token_hash).to be_nil
+        end
+
+        it "keeps the access token if the wrong key is passed" do
+          expect(authorization.access_token_hash).to eq(OAuth2::Lib::SecureCodeScheme.hashify('magic-key'))
+          request('/user_profile', 'oauth_token' => 'is-the-password-books')
+          authorization.reload
+          expect(authorization.access_token_hash).to eq(OAuth2::Lib::SecureCodeScheme.hashify('magic-key'))
+        end
+
+      end #describe
 
     end # shared_examples_for
 
     describe "for header-based requests" do
-      # context "for OAuth headers" do
-      #   def request(path, params = {})
-      #     access_token = params.delete('oauth_token')
-      #     http   = Net::HTTP.new('localhost', RequestHelpers::SERVER_PORT)
-      #     qs     = params.map { |k,v| "#{ CGI.escape k.to_s }=#{ CGI.escape v.to_s }" }.join('&')
-      #     header = {'Authorization' => "OAuth #{access_token}"}
-      #     http.request_get(path + '?' + qs, header)
-      #   end
-      #
-      #   it_should_behave_like "protected resource"
-      # end
+      context "for OAuth headers" do
+        def request(path, params = {})
+          access_token = params.delete('oauth_token')
+          http   = Net::HTTP.new('localhost', RequestHelpers::SERVER_PORT)
+          qs     = params.map { |k,v| "#{ CGI.escape k.to_s }=#{ CGI.escape v.to_s }" }.join('&')
+          header = {'Authorization' => "OAuth #{access_token}"}
+          http.request_get(path + '?' + qs, header)
+        end
 
-    #   context "for Bearer headers" do
-    #     def request(path, params = {})
-    #       access_token = params.delete('oauth_token')
-    #       http   = Net::HTTP.new('localhost', RequestHelpers::SERVER_PORT)
-    #       qs     = params.map { |k,v| "#{ CGI.escape k.to_s }=#{ CGI.escape v.to_s }" }.join('&')
-    #       header = {'Authorization' => "Bearer #{access_token}"}
-    #       http.request_get(path + '?' + qs, header)
-    #     end
-    #
-    #     it_should_behave_like "protected resource"
-    #   end
+        it_should_behave_like "protected resource"
+      end
+
+      context "for Bearer headers" do
+        def request(path, params = {})
+          access_token = params.delete('oauth_token')
+          http   = Net::HTTP.new('localhost', RequestHelpers::SERVER_PORT)
+          qs     = params.map { |k,v| "#{ CGI.escape k.to_s }=#{ CGI.escape v.to_s }" }.join('&')
+          header = {'Authorization' => "Bearer #{access_token}"}
+          http.request_get(path + '?' + qs, header)
+        end
+
+        it_should_behave_like "protected resource"
+      end
     end
 
-    # describe "for GET requests" do
-    #   def request(path, params = {})
-    #     qs  = params.map { |k,v| "#{ CGI.escape k.to_s }=#{ CGI.escape v.to_s }" }.join('&')
-    #     uri = URI.parse("http://localhost:#{RequestHelpers::SERVER_PORT}" + path + '?' + qs)
-    #     Net::HTTP.get_response(uri)
-    #   end
-    #
-    #   it_should_behave_like "protected resource"
-    # end
-    #
-    # describe "for POST requests" do
-    #   def request(path, params = {})
-    #     Net::HTTP.post_form(URI.parse("http://localhost:#{RequestHelpers::SERVER_PORT}" + path), params)
-    #   end
-    #
-    #   it_should_behave_like "protected resource"
-    # end
+    describe "for GET requests" do
+      def request(path, params = {})
+        qs  = params.map { |k,v| "#{ CGI.escape k.to_s }=#{ CGI.escape v.to_s }" }.join('&')
+        uri = URI.parse("http://localhost:#{RequestHelpers::SERVER_PORT}" + path + '?' + qs)
+        Net::HTTP.get_response(uri)
+      end
+
+      it_should_behave_like "protected resource"
+    end
+
+    describe "for POST requests" do
+      def request(path, params = {})
+        Net::HTTP.post_form(URI.parse("http://localhost:#{RequestHelpers::SERVER_PORT}" + path), params)
+      end
+
+      it_should_behave_like "protected resource"
+    end
   end
 end

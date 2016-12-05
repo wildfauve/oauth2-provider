@@ -90,7 +90,6 @@ module OAuth2
       end
 
       def redirect?
-        # relying_party and (@authorized or not valid?)
         relying_party && (@authorized || !valid? || redirectable_error?)
       end
 
@@ -201,7 +200,7 @@ module OAuth2
 
       def check_params
         missing_params = checked_params - @params.keys
-        if missing_params.present?
+        if missing_params.any?
           @error = INVALID_REQUEST
           @error_description = "Missing required parameter(s) #{missing_params.map(&:to_sym)}"
         end
