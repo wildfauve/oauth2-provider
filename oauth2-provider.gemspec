@@ -20,7 +20,7 @@ spec = Gem::Specification.new do |s|
   s.add_dependency 'rack'
   s.add_dependency 'json-jwt'
 
-  s.add_development_dependency 'appraisal'
+  s.add_development_dependency 'appraisal', '~> 0.4.0'
   s.add_development_dependency 'mysql', '~> 2.8.0' if ENV['DB'] == 'mysql' # version locked by ActiveRecord
   s.add_development_dependency 'pg' if ENV['DB'] == 'postgres'
   s.add_development_dependency 'rspec'
