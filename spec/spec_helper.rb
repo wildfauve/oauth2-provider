@@ -50,10 +50,10 @@ Thin::Logging.silent = true
 $VERBOSE = nil
 
 module URI
-  class FLICKAPP < Generic
+  class EXAMPLEAPP < Generic
     DEFAULT_PORT = 10000
   end
-  @@schemes['FLICKAPP'] = FLICKAPP
+  @@schemes['EXAMPLEAPP'] = EXAMPLEAPP
 end
 
 
